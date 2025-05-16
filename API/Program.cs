@@ -40,6 +40,8 @@ builder.Services.AddScoped<IEmpresaRepository, EmpresaRepository>();
 builder.Services.AddScoped<ICreateClienteCommandHandler, CreateClienteHandler>();
 builder.Services.AddScoped<IUpdateClienteCommandHandler, UpdateClienteHandler>();
 builder.Services.AddScoped<IDeleteClienteCommandHandler, DeleteClienteHandler>();
+builder.Services.AddScoped<IVincularEmpresaCommandHandler, VincularEmpresaHandler>();
+builder.Services.AddScoped<IAgregarOficioCommandHandler, AgregarOficioHandler>();
 // Registra los query handlers Cliente
 builder.Services.AddScoped<IGetClienteByIdQueryHandler, GetClienteByIdHandler>();
 builder.Services.AddScoped<IListClientesQueryHandler, ListClientesHandler>();

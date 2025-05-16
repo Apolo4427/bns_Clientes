@@ -18,7 +18,9 @@ namespace ModuloClientes.API.Controllers
         private readonly ICreateClienteCommandHandler _createHandler;
         private readonly IGetClienteByIdQueryHandler _getClienteById;
         private readonly IListClientesQueryHandler _listClientes;
+        private readonly IValidator<ClienteUpdateDto> _updateValidator;
         private readonly IUpdateClienteCommandHandler _updateHandler;
+        private readonly IAgregarOficioCommandHandler _agregarOficioHandler;
         private readonly IVincularEmpresaCommandHandler _vincularHandler;
         private readonly IMapper _mapper;
 
@@ -27,7 +29,9 @@ namespace ModuloClientes.API.Controllers
             ICreateClienteCommandHandler createClienteCommandHandler,
             IGetClienteByIdQueryHandler getClienteByIdQuery,
             IListClientesQueryHandler listClientesQueryHandler,
+            IValidator<ClienteUpdateDto> updateValidator,
             IUpdateClienteCommandHandler updateHandler,
+            IAgregarOficioCommandHandler agregarOficioHandler,
             IVincularEmpresaCommandHandler vincular,
             IMapper mapper
             )
@@ -36,7 +40,9 @@ namespace ModuloClientes.API.Controllers
             _createHandler = createClienteCommandHandler;
             _getClienteById = getClienteByIdQuery;
             _listClientes = listClientesQueryHandler;
+            _updateValidator = updateValidator;
             _updateHandler = updateHandler;
+            _agregarOficioHandler = agregarOficioHandler;
             _vincularHandler = vincular;
             _mapper = mapper;
         }
@@ -102,7 +108,12 @@ namespace ModuloClientes.API.Controllers
         public async Task<ActionResult> Update(
             int id,
             [FromBody] ClienteUpdateDto updateDto)
-        {            
+        {
+            var validationResult = await _updateValidator.ValidateAsync(updateDto);
+
+            if (!validationResult.IsValid)
+                return BadRequest(validationResult.Errors);
+
             var command = _mapper.Map<UpdateClienteCommand>(updateDto)
                             with { Id = id};
 
@@ -127,6 +138,39 @@ namespace ModuloClientes.API.Controllers
 
         }
 
+        /// <summary>
+        /// Agrega un oficio a un cliente segun si Id
+        /// <summary>
+        [HttpPost("{clienteId}/oficio")]
+        [ProducesResponseType(typeof(IEnumerable<string>),
+            StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<IEnumerable<string>>> AgregarOficio(
+            int clienteId,
+            [FromBody] string oficio
+        )
+        {
+            if (string.IsNullOrWhiteSpace(oficio))
+                return BadRequest("El oficio no puede estar vacio");
+                
+            try
+            {
+                await _agregarOficioHandler.HandleAsync(new AgregarOficioCommand(clienteId, oficio));
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound($"Cliente con ID {clienteId} no encontrado.");
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+            var cliente = await _getClienteById.HandleAsync(new GetClienteByIdQuery(clienteId));
+            var oficiosCliente = cliente.Oficios;
+
+            return Ok(oficiosCliente);
+        }
 
         /// <summary>
         /// Genera un vinculo nuevo entre un cliente y una empresa
@@ -134,22 +178,28 @@ namespace ModuloClientes.API.Controllers
         [HttpPost("{clienteId}/vincularEmpresa")]
         [ProducesResponseType(typeof(ActionResult), StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult> VinvularEmpresa(
-            int clienteId, 
+            int clienteId,
             [FromBody] EmpresaClienteCreateDto dto)
         {
             var command = _mapper.Map<VincularEmpresaCommand>(dto)
-                            with { ClienteId = clienteId};
-            
+                            with
+            { ClienteId = clienteId };
+
             try
             {
                 await _vincularHandler.HandleAsync(command);
             }
-            catch(KeyNotFoundException)
+            catch (KeyNotFoundException)
             {
                 return NotFound();
             }
-            
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+
             return NoContent();
         }
     }

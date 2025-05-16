@@ -165,7 +165,7 @@ namespace ModuloClientes.Core.Models
 
             return edad;
         }
-
+        // TODO: IMPLEMENTAR HANDLER PARA OFICIOS
         public void AgregarOficio(string nuevoOficio)
         {
             if (string.IsNullOrWhiteSpace(nuevoOficio))
@@ -178,6 +178,15 @@ namespace ModuloClientes.Core.Models
             if (string.IsNullOrWhiteSpace(oficio))
                 throw new ArgumentNullException("El oficio esta vacio o nulo", nameof(oficio));
             Oficios.Remove(oficio);
+        }
+
+        public void ReemplazarOficios(IEnumerable<string> nuevosOficios)
+        {
+            if(nuevosOficios is null)
+                throw new ArgumentException("No se pueden introducir oficios nulos", nameof(nuevosOficios));
+            Oficios.Clear();
+            foreach (var o in nuevosOficios)
+                AgregarOficio(o);
         }
 
         public void VincularEmpresa(Empresa empresa, string rol, DateTime fecha)
