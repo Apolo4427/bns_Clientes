@@ -20,7 +20,10 @@ namespace ModuloClientes.API.Controllers
         private readonly IListClientesQueryHandler _listClientes;
         private readonly IValidator<ClienteUpdateDto> _updateValidator;
         private readonly IUpdateClienteCommandHandler _updateHandler;
+        private readonly IDeleteClienteCommandHandler _deleteHanlder;
         private readonly IAgregarOficioCommandHandler _agregarOficioHandler;
+        private readonly IEliminarOficioCommandHandler _eliminarOficioHandler;
+        private readonly IUpdateOficiosCommandHandler _reemplazarOficios;
         private readonly IVincularEmpresaCommandHandler _vincularHandler;
         private readonly IMapper _mapper;
 
@@ -31,7 +34,10 @@ namespace ModuloClientes.API.Controllers
             IListClientesQueryHandler listClientesQueryHandler,
             IValidator<ClienteUpdateDto> updateValidator,
             IUpdateClienteCommandHandler updateHandler,
+            IDeleteClienteCommandHandler deleteClienteHandler,
             IAgregarOficioCommandHandler agregarOficioHandler,
+            IEliminarOficioCommandHandler eliminarOficiohandler,
+            IUpdateOficiosCommandHandler updateOficiosHandler,
             IVincularEmpresaCommandHandler vincular,
             IMapper mapper
             )
@@ -42,7 +48,10 @@ namespace ModuloClientes.API.Controllers
             _listClientes = listClientesQueryHandler;
             _updateValidator = updateValidator;
             _updateHandler = updateHandler;
+            _deleteHanlder = deleteClienteHandler;
             _agregarOficioHandler = agregarOficioHandler;
+            _eliminarOficioHandler = eliminarOficiohandler;
+            _reemplazarOficios = updateOficiosHandler;
             _vincularHandler = vincular;
             _mapper = mapper;
         }
@@ -133,15 +142,30 @@ namespace ModuloClientes.API.Controllers
         /// Genera un vinculo nuevo entre un cliente y una empresa
         /// <summary>
         [HttpDelete("{id}")]
+        [ProducesResponseType(StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult> Delete(int id)
         {
-
+            try
+            {
+                await _deleteHanlder.HandleAsync(new DeleteClienteCommand(id));
+                return NoContent();
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound($"El cliente con el id {id} no se ha encontrado");
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         /// <summary>
         /// Agrega un oficio a un cliente segun si Id
         /// <summary>
-        [HttpPost("{clienteId}/oficio")]
+        [HttpPost("{clienteId}/agregarOficio")]
         [ProducesResponseType(typeof(IEnumerable<string>),
             StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
@@ -153,10 +177,11 @@ namespace ModuloClientes.API.Controllers
         {
             if (string.IsNullOrWhiteSpace(oficio))
                 return BadRequest("El oficio no puede estar vacio");
-                
+
             try
             {
-                await _agregarOficioHandler.HandleAsync(new AgregarOficioCommand(clienteId, oficio));
+                var oficios = await _agregarOficioHandler.HandleAsync(new AgregarOficioCommand(clienteId, oficio));
+                return Ok(oficios);
             }
             catch (KeyNotFoundException)
             {
@@ -166,10 +191,71 @@ namespace ModuloClientes.API.Controllers
             {
                 return BadRequest(ex.Message);
             }
-            var cliente = await _getClienteById.HandleAsync(new GetClienteByIdQuery(clienteId));
-            var oficiosCliente = cliente.Oficios;
 
-            return Ok(oficiosCliente);
+        }
+
+        /// <summary>
+        /// Elimina un oficio del cliente segun su Id
+        /// <summary>
+        [HttpPut("{clienteId}/eliminarOficio")]
+        [ProducesResponseType(typeof(IEnumerable<string>),
+            StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<IEnumerable<string>>> EliminarOficio(
+            int clienteId,
+            [FromBody] string oficio
+        )
+        {
+            if (string.IsNullOrWhiteSpace(oficio))
+                return BadRequest("Se envio un oficio vacio o nulo");
+
+            try
+            {
+                var oficios = await _eliminarOficioHandler.HandleAsync(new EliminarOficioCommand(clienteId, oficio));
+                return Ok(oficios);
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound($"El cliente con id {clienteId} no se ha encontrado");
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
+
+        /// <summary>
+        /// Reemplaza la lista de oficios por una nueva, segun el id del cliente
+        /// <summary>
+        [HttpPost("{clienteId}/reemplazarOficios")]
+        [ProducesResponseType(typeof(IEnumerable<string>),
+            StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult<IEnumerable<string>>> ReemplazarOficios(
+            int clienteId,
+            [FromBody] IEnumerable<string> oficiosNuevos
+        )
+        {
+            foreach (var oficio in oficiosNuevos)
+            {
+                if (string.IsNullOrWhiteSpace(oficio))
+                    return BadRequest("No se deben agregar oficios nulos o vacios");
+            }
+            try
+            {
+                var oficios = await _reemplazarOficios.HandleAsync(new UpdateOficiosCommand(clienteId, oficiosNuevos));
+                return Ok(oficios);
+            }
+            catch (KeyNotFoundException)
+            {
+                return NotFound($"El cliente con id {clienteId} no se ha encontrado");
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         /// <summary>

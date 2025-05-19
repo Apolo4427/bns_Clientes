@@ -170,14 +170,16 @@ namespace ModuloClientes.Core.Models
         {
             if (string.IsNullOrWhiteSpace(nuevoOficio))
                 throw new ArgumentException("No se pueden agregar oficios vacios", nameof(nuevoOficio));
-            Oficios.Add(nuevoOficio);
+            Oficios.Add(nuevoOficio.ToLower());
         }
 
         public void EliminarOficio(string oficio)
         {
-            if (string.IsNullOrWhiteSpace(oficio))
-                throw new ArgumentNullException("El oficio esta vacio o nulo", nameof(oficio));
-            Oficios.Remove(oficio);
+            if (string.IsNullOrWhiteSpace(oficio) || !Oficios.Contains(oficio))
+                throw new ArgumentNullException("El oficio esta vacio o nulo, o se esta intentando eliminar un oficio que el cliente no tiene",
+                    nameof(oficio));            
+            Oficios.Remove(oficio.ToLower());
+            
         }
 
         public void ReemplazarOficios(IEnumerable<string> nuevosOficios)
@@ -186,7 +188,7 @@ namespace ModuloClientes.Core.Models
                 throw new ArgumentException("No se pueden introducir oficios nulos", nameof(nuevosOficios));
             Oficios.Clear();
             foreach (var o in nuevosOficios)
-                AgregarOficio(o);
+                AgregarOficio(o.ToLower());
         }
 
         public void VincularEmpresa(Empresa empresa, string rol, DateTime fecha)
