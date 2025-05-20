@@ -1,4 +1,5 @@
 using ModuloClientes.Core.Enums;
+using ModuloClientes.Core.Models.ValueObjects.ClienteValueObjects;
 
 namespace ModuloClientes.Core.Models
 {
@@ -7,18 +8,16 @@ namespace ModuloClientes.Core.Models
         public int Id { get; private set; } // Clave primaria
 
         // Datos personales
-        public string Nombre { get; private set; }
-        public string Apellido { get; private set; }
-        public int Edad 
-            => CalcularEdad(FechaNacimiento);
-        public string Correo { get; private set; }
-        public string Telefono { get; private set; }
+        public Name Nombre { get; private set; }
+        public Surname Apellido { get; private set; }
+        public Email Correo { get; private set; }
+        public Phone Telefono { get; private set; }
         public DateTime FechaNacimiento { get; private set; }
 
         // Datos fiscales
-        public string EstadoCivil { get; private set; }
-        public string EstadoTributario { get; private set; }
-        public string SocialSecurityNumber { get; private set; }
+        public MaritalStatus EstadoCivil { get; private set; }
+        public TaxStatus EstadoTributario { get; private set; }
+        public SSN SocialSecurityNumber { get; private set; }
         public ICollection<string> Oficios { get; private set; } = new List<string>();
 
         // Estado dentro del sistema: Prospecto o Activo
@@ -28,7 +27,7 @@ namespace ModuloClientes.Core.Models
         public ICollection<ClienteRelacion> Relaciones { get; private set; } = new List<ClienteRelacion>();
 
         // Dirección
-        public string Direccion { get; private set; }
+        public Address Direccion { get; private set; }
 
         // Relación con Empresas (dueño o socio)
         public ICollection<EmpresaCliente> Empresas { get; private set; } = new List<EmpresaCliente>();
@@ -46,30 +45,25 @@ namespace ModuloClientes.Core.Models
 
         // Constructor para garantizar invariantes
         public Cliente(
-            string nombre,
-            string apellido,
-            string correo,
-            string telefono,
+            Name nombre,
+            Surname apellido,
+            Email correo,
+            Phone telefono,
             DateTime fechaNacimiento,
-            string estadoCivil,
-            string estadoTributario,
-            string socialSecurityNumber,
-            string direccion)
+            MaritalStatus estadoCivil,
+            TaxStatus estadoTributario,
+            SSN socialSecurityNumber,
+            Address direccion)
         {
-            if (string.IsNullOrWhiteSpace(nombre))
-                throw new ArgumentException("El nombre es obligatorio", nameof(nombre));
-            if (string.IsNullOrWhiteSpace(apellido))
-                throw new ArgumentException("El apellido es obligatorio", nameof(apellido));
-            if (string.IsNullOrWhiteSpace(telefono))
-                throw new ArgumentException("El telefono es obligatorio", nameof(telefono));
-            if (string.IsNullOrWhiteSpace(correo))
-                throw new ArgumentException("El correo es obligatorio", nameof(correo));
-            if (string.IsNullOrWhiteSpace(socialSecurityNumber))
-                throw new ArgumentException("EL SSN es obligatorio", nameof(socialSecurityNumber));
-            if (string.IsNullOrWhiteSpace(direccion))
-                throw new ArgumentException("La direccion es obligatorioa", nameof(direccion));
-            if (string.IsNullOrWhiteSpace(estadoTributario))
-                throw new ArgumentException("El estado tributario es obligatorio", nameof(estadoTributario));
+            Nombre = nombre ?? throw new ArgumentNullException(nameof(nombre));
+            Apellido = apellido ?? throw new ArgumentNullException(nameof(apellido));
+            Correo = correo ?? throw new ArgumentNullException(nameof(correo));
+            Telefono = telefono ?? throw new ArgumentNullException(nameof(telefono));
+            FechaNacimiento = fechaNacimiento;
+            EstadoCivil = estadoCivil;
+            EstadoTributario = estadoTributario;
+            SocialSecurityNumber = socialSecurityNumber ?? throw new ArgumentNullException(nameof(socialSecurityNumber));
+            Direccion = direccion ?? throw new ArgumentNullException(nameof(direccion));
             if (fechaNacimiento == default  ||
                 fechaNacimiento < new DateTime(1900, 1, 1) ||
                 fechaNacimiento > DateTime.Today)
@@ -84,7 +78,8 @@ namespace ModuloClientes.Core.Models
             EstadoTributario = estadoTributario;
             SocialSecurityNumber = socialSecurityNumber;
             Direccion = direccion;
-            Estado = EstadoCliente.Activo; // por defecto
+            // TODO: Implementar cambio de estado del cliente
+            Estado = EstadoCliente.Prospecto; // por defecto
         }
 
         // Metodos de dominio
@@ -92,78 +87,118 @@ namespace ModuloClientes.Core.Models
         public void MarcarActivo() => Estado = EstadoCliente.Activo;
         public void MarcarProspecto() => Estado = EstadoCliente.Prospecto;
 
-        public void CambiarSocialSecurityNumber(string nuevoSocial)
+                // Métodos de actualización robustos al nivel de un senior
+        public void CambiarNombre(Name nuevoNombre)
         {
-            if (string.IsNullOrWhiteSpace(nuevoSocial))
-                throw new ArgumentException("El Social Security Number no puede estar vacio");
-            SocialSecurityNumber = nuevoSocial;
-        }
+            if (nuevoNombre is null)
+                throw new ArgumentNullException(nameof(nuevoNombre));
 
-        public void CambiarCorreo(string nuevoCorreo)
-        {
-            if (string.IsNullOrWhiteSpace(nuevoCorreo))
-                throw new ArgumentException("El correo no puede estar vacío", nameof(nuevoCorreo));
-            this.Correo = nuevoCorreo;
-        }
+            if (nuevoNombre.Equals(Nombre))
+                return;
 
-        public void CambiarTelefono(string nuevoTelefono)
-        {
-            if (string.IsNullOrWhiteSpace(nuevoTelefono))
-                throw new ArgumentException("El telefono no puede estar vacio", nameof(nuevoTelefono));
-            this.Telefono = nuevoTelefono;
-        }
-
-        public void CambiarFechaDeNacimiento(DateTime fechaDeNacimiento)
-        {
-            if (fechaDeNacimiento > DateTime.Now)
-                throw new ArgumentException("La fecha de nacimiento no puede ser posterior a la fecha actual", nameof(fechaDeNacimiento));
-            FechaNacimiento = fechaDeNacimiento;
-        }
-
-        public void CambiarDireccion(string nuevaDireccion)
-        {
-            if (string.IsNullOrWhiteSpace(nuevaDireccion))
-                throw new ArgumentException("La direccion no puede esta vacia", nameof(nuevaDireccion));
-            this.Direccion = nuevaDireccion;
-        }
-        public void CambiarNombre(string nuevoNombre)
-        {
-            if (string.IsNullOrWhiteSpace(nuevoNombre))
-                throw new ArgumentException("El nombre no puede estar vacío", nameof(nuevoNombre));
             Nombre = nuevoNombre;
         }
 
-        public void CambiarApellido(string nuevoApellido)
+        public void CambiarApellido(Surname nuevoApellido)
         {
-            if (string.IsNullOrWhiteSpace(nuevoApellido))
-                throw new ArgumentException("El apellido no puede estar vacío", nameof(nuevoApellido));
+            if (nuevoApellido is null)
+                throw new ArgumentNullException(nameof(nuevoApellido));
+
+            if (nuevoApellido.Equals(Apellido))
+                return;
+
             Apellido = nuevoApellido;
         }
 
-        public void CambiarEstadoCivil(string nuevoEstadoCivil)
+        public void CambiarCorreo(Email nuevoCorreo)
         {
-            if (string.IsNullOrWhiteSpace(nuevoEstadoCivil))
-                throw new ArgumentException("El estado civil no puede estar vacío", nameof(nuevoEstadoCivil));
+            if (nuevoCorreo is null)
+                throw new ArgumentNullException(nameof(nuevoCorreo));
+
+            if (nuevoCorreo.Equals(Correo))
+                return;
+
+            Correo = nuevoCorreo;
+        }
+
+        public void CambiarTelefono(Phone nuevoTelefono)
+        {
+            if (nuevoTelefono is null)
+                throw new ArgumentNullException(nameof(nuevoTelefono));
+
+            if (nuevoTelefono.Equals(Telefono))
+                return;
+
+            Telefono = nuevoTelefono;
+        }
+
+        public void CambiarFechaNacimiento(DateTime nuevaFechaNacimiento)
+        {
+            if (nuevaFechaNacimiento == default)
+                throw new ArgumentException("Fecha de nacimiento inválida.", nameof(nuevaFechaNacimiento));
+
+            if (nuevaFechaNacimiento > DateTime.Today)
+                throw new ArgumentException("La fecha de nacimiento no puede ser posterior a hoy.", nameof(nuevaFechaNacimiento));
+
+            if (nuevaFechaNacimiento.Equals(FechaNacimiento))
+                return;
+
+            FechaNacimiento = nuevaFechaNacimiento;
+        }
+
+        public void CambiarDireccion(Address nuevaDireccion)
+        {
+            if (nuevaDireccion is null)
+                throw new ArgumentNullException(nameof(nuevaDireccion));
+
+            if (nuevaDireccion.Equals(Direccion))
+                return;
+
+            Direccion = nuevaDireccion;
+        }
+
+        public void CambiarSSN(SSN nuevoSSN)
+        {
+            if (nuevoSSN is null)
+                throw new ArgumentNullException(nameof(nuevoSSN));
+
+            if (nuevoSSN.Equals(SocialSecurityNumber))
+                return;
+
+            SocialSecurityNumber = nuevoSSN;
+        }
+
+        public void CambiarEstadoCivil(MaritalStatus nuevoEstadoCivil)
+        {
+            if (!Enum.IsDefined(typeof(MaritalStatus), nuevoEstadoCivil))
+                throw new ArgumentException("Estado civil inválido.", nameof(nuevoEstadoCivil));
+
+            if (nuevoEstadoCivil == EstadoCivil)
+                return;
+
             EstadoCivil = nuevoEstadoCivil;
         }
 
-        public void CambiarEstadoTributario(string nuevoEstadoTributario)
+        public void CambiarEstadoTributario(TaxStatus nuevoEstadoTributario)
         {
-            if (string.IsNullOrWhiteSpace(nuevoEstadoTributario))
-                throw new ArgumentException("El estado tributario no puede estar vacío", nameof(nuevoEstadoTributario));
+            if (!Enum.IsDefined(typeof(TaxStatus), nuevoEstadoTributario))
+                throw new ArgumentException("Estado tributario inválido.", nameof(nuevoEstadoTributario));
+
+            if (nuevoEstadoTributario == EstadoTributario)
+                return;
+
             EstadoTributario = nuevoEstadoTributario;
         }
 
-        public int CalcularEdad(DateTime fechaNacimiento)
+        public int Edad
         {
-            var hoy = DateTime.Today;
-            var edad = hoy.Year - fechaNacimiento.Year;
-
-            // Si el cumpleaños no ha ocurrido este año, restar 1
-            if (fechaNacimiento.Date > hoy.AddYears(-edad))
-                edad--;
-
-            return edad;
+            get
+            {
+                var today = DateTime.Today;
+                var age = today.Year - FechaNacimiento.Year;
+                if (FechaNacimiento.Date > today.AddYears(-age)) age--;
+                return age;
+            }
         }
         // TODO: IMPLEMENTAR HANDLER PARA OFICIOS
         public void AgregarOficio(string nuevoOficio)
