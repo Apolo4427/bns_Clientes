@@ -8,6 +8,7 @@ namespace ModuloClientes.Core.Models
         public Empresa Empresa { get; private set; }
         public string Rol { get; private set; }  // ej. "Dueño", "Socio"
         public DateTime FechaVinculacion { get; private set; }
+        public byte[] RowVersion { get; private set; }
 
         private EmpresaCliente()
         {

@@ -1,5 +1,8 @@
+using System.ClientModel.Primitives;
+using System.Runtime.Intrinsics.Arm;
 using Microsoft.EntityFrameworkCore;
 using ModuloClientes.Core.Models;
+using ModuloClientes.Infrastructure.Data.Configurations;
 
 namespace ModuloClientes.Infrastructure.Data
 {
@@ -16,32 +19,28 @@ namespace ModuloClientes.Infrastructure.Data
         {
             base.OnModelCreating(modelBuilder);
 
-            // Configurar clave compuesta en la tabla intermedia
-            modelBuilder.Entity<EmpresaCliente>()
-                .HasKey(ec => new { ec.ClienteId, ec.EmpresaId });
+            // Aplicar configuraciones para EmpresaCliente
+            modelBuilder.ApplyConfiguration(new EmpresaClienteConfig());
 
-            // Relación Cliente ↔ EmpresaCliente (1:N)
-            modelBuilder.Entity<EmpresaCliente>()
-                .HasOne(ec => ec.Cliente)
-                .WithMany(c => c.Empresas)
-                .HasForeignKey(ec => ec.ClienteId);
+            // Aplicar configuraciones para ClienteRelacion
+            modelBuilder.ApplyConfiguration(new ClienteRelacionConfig());
 
-            // Relación Empresa ↔ EmpresaCliente (1:N)
-            modelBuilder.Entity<EmpresaCliente>()
-                .HasOne(ec => ec.Empresa)
-                .WithMany(e => e.Clientes)
-                .HasForeignKey(ec => ec.EmpresaId);
+            // Aplicar configuraciones para Cliente
+            modelBuilder.ApplyConfiguration(new ClienteConfig());
 
             // Relación SeguroSalud ↔ Cliente (1:N)
             modelBuilder.Entity<Cliente>()
                 .HasOne(c => c.SeguroSalud)
                 .WithMany(s => s.Clientes)
                 .HasForeignKey(c => c.SeguroSaludId);
-                
+
             // Precicion del decimal en SeguroSalud
             modelBuilder.Entity<SeguroSalud>()
                 .Property(S => S.PrimaMensual)
                 .HasPrecision(18, 2);
+                
+
+            // Configuracion para 
         }
     }
 }

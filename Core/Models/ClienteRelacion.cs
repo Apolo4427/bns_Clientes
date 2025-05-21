@@ -4,13 +4,14 @@ namespace ModuloClientes.Core.Models
 {
     public class ClienteRelacion
     {
-        public int ClienteId { get; private set; }
+        public int ClienteId { get; private set; } //TODO: cambiar int por Guid en los ids
         public Cliente Cliente { get; private set; }
 
         public int RelacionadoId { get; private set; }
         public Cliente Relacionado { get; private set; }
 
         public TipoRelacion Tipo { get; private set; }
+        public byte[] RowVersion { get; private set; }
 
         /// <summary>
         /// Indica si la persona relacionada es dependiente financiero.

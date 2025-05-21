@@ -14,9 +14,9 @@ namespace ModuloClientes.Infrastructure.Persistence.Handlers.ClienteHandler
         }
         public async Task<IEnumerable<string>> HandleAsync(EliminarOficioCommand command)
         {
-            var cliente = await _repo.GetByIdAsync(command.clienteId);
+            var cliente = await _repo.GetByIdAsync(command.ClienteId);
 
-            cliente.EliminarOficio(command.oficio);
+            cliente.EliminarOficio(command.Oficio);
 
             await _repo.UpdateAsync(cliente);
 

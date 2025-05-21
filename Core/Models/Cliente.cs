@@ -18,7 +18,7 @@ namespace ModuloClientes.Core.Models
         public MaritalStatus EstadoCivil { get; private set; }
         public TaxStatus EstadoTributario { get; private set; }
         public SSN SocialSecurityNumber { get; private set; }
-        public ICollection<string> Oficios { get; private set; } = new List<string>();
+        public ICollection<Oficio> Oficios { get; private set; } = new List<Oficio>();
 
         // Estado dentro del sistema: Prospecto o Activo
         public EstadoCliente Estado { get; private set; }
@@ -35,12 +35,13 @@ namespace ModuloClientes.Core.Models
         // Relacion con SeguroSalud
         public int? SeguroSaludId { get; private set; }
         public SeguroSalud? SeguroSalud { get; private set; }
+        public byte[] RowVersion { get; private set; }
 
         // Constructor vacio
         private Cliente()
         {
-            #pragma warning disable CS8618
-            #pragma warning restore CS8618
+#pragma warning disable CS8618
+#pragma warning restore CS8618
         }
 
         // Constructor para garantizar invariantes
@@ -59,25 +60,15 @@ namespace ModuloClientes.Core.Models
             Apellido = apellido ?? throw new ArgumentNullException(nameof(apellido));
             Correo = correo ?? throw new ArgumentNullException(nameof(correo));
             Telefono = telefono ?? throw new ArgumentNullException(nameof(telefono));
-            FechaNacimiento = fechaNacimiento;
-            EstadoCivil = estadoCivil;
-            EstadoTributario = estadoTributario;
             SocialSecurityNumber = socialSecurityNumber ?? throw new ArgumentNullException(nameof(socialSecurityNumber));
             Direccion = direccion ?? throw new ArgumentNullException(nameof(direccion));
             if (fechaNacimiento == default  ||
                 fechaNacimiento < new DateTime(1900, 1, 1) ||
                 fechaNacimiento > DateTime.Today)
                 throw new ArgumentException("La fecha de nacimiento debe estar entre 1900 y hoy", nameof(fechaNacimiento));
-
-            Nombre = nombre;
-            Apellido = apellido;
-            Correo = correo;
-            Telefono = telefono;
             FechaNacimiento = fechaNacimiento;
             EstadoCivil = estadoCivil;
             EstadoTributario = estadoTributario;
-            SocialSecurityNumber = socialSecurityNumber;
-            Direccion = direccion;
             // TODO: Implementar cambio de estado del cliente
             Estado = EstadoCliente.Prospecto; // por defecto
         }
@@ -87,7 +78,6 @@ namespace ModuloClientes.Core.Models
         public void MarcarActivo() => Estado = EstadoCliente.Activo;
         public void MarcarProspecto() => Estado = EstadoCliente.Prospecto;
 
-                // Métodos de actualización robustos al nivel de un senior
         public void CambiarNombre(Name nuevoNombre)
         {
             if (nuevoNombre is null)
@@ -201,29 +191,36 @@ namespace ModuloClientes.Core.Models
             }
         }
         // TODO: IMPLEMENTAR HANDLER PARA OFICIOS
-        public void AgregarOficio(string nuevoOficio)
+        public void AgregarOficio(Oficio nuevoOficio)
         {
-            if (string.IsNullOrWhiteSpace(nuevoOficio))
+            if (nuevoOficio is null)
                 throw new ArgumentException("No se pueden agregar oficios vacios", nameof(nuevoOficio));
-            Oficios.Add(nuevoOficio.ToLower());
-        }
-
-        public void EliminarOficio(string oficio)
-        {
-            if (string.IsNullOrWhiteSpace(oficio) || !Oficios.Contains(oficio))
-                throw new ArgumentNullException("El oficio esta vacio o nulo, o se esta intentando eliminar un oficio que el cliente no tiene",
-                    nameof(oficio));            
-            Oficios.Remove(oficio.ToLower());
             
+            if(Oficios.Any(o => o.EsMismoOficio(nuevoOficio)))
+                throw new InvalidOperationException($"El oficio '{nuevoOficio}' ya existe");
+
+            Oficios.Add(nuevoOficio);
         }
 
-        public void ReemplazarOficios(IEnumerable<string> nuevosOficios)
+        public void EliminarOficio(Oficio oficio)
+        {
+            if (oficio is null)
+                throw new ArgumentNullException("El oficio esta vacio o nulo",
+                    nameof(oficio));
+
+            var oficioExistente = Oficios.FirstOrDefault(o => o.EsMismoOficio(oficio))
+                ?? throw new KeyNotFoundException("El oficio no existe en este cliente");
+                      
+            Oficios.Remove(oficioExistente);
+        }
+
+        public void ReemplazarOficios(IEnumerable<Oficio> nuevosOficios)
         {
             if(nuevosOficios is null)
                 throw new ArgumentException("No se pueden introducir oficios nulos", nameof(nuevosOficios));
             Oficios.Clear();
-            foreach (var o in nuevosOficios)
-                AgregarOficio(o.ToLower());
+            foreach (var o in nuevosOficios.Distinct())
+                AgregarOficio(o);
         }
 
         public void VincularEmpresa(Empresa empresa, string rol, DateTime fecha)

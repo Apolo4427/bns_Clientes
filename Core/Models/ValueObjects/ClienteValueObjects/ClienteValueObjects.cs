@@ -11,7 +11,9 @@ namespace ModuloClientes.Core.Models.ValueObjects.ClienteValueObjects
         private const int MinLength = 2;
         private static readonly Regex NameRegex = new Regex(
             @"^[\p{L}\s'-]+$",
-            RegexOptions.Compiled | RegexOptions.CultureInvariant);
+            RegexOptions.Compiled | RegexOptions.CultureInvariant,
+            TimeSpan.FromMilliseconds(250)
+        );
         public Name(string value)
         {
             if (string.IsNullOrWhiteSpace(value))
@@ -46,7 +48,8 @@ namespace ModuloClientes.Core.Models.ValueObjects.ClienteValueObjects
         private const int MinLength = 2;
         private static readonly Regex SurnameRegex = new Regex(
             @"^[\p{L}\s'-]+$",
-            RegexOptions.Compiled | RegexOptions.CultureInvariant
+            RegexOptions.Compiled | RegexOptions.CultureInvariant,
+            TimeSpan.FromMilliseconds(250)
         );
 
         public Surname(string value)
@@ -88,6 +91,7 @@ namespace ModuloClientes.Core.Models.ValueObjects.ClienteValueObjects
             RegexOptions.IgnoreCase | RegexOptions.Compiled,
             TimeSpan.FromMilliseconds(250));
 
+
         public Email(string value)
         {
             if (string.IsNullOrWhiteSpace(value))
@@ -120,6 +124,40 @@ namespace ModuloClientes.Core.Models.ValueObjects.ClienteValueObjects
         public int CompareTo([AllowNull] Email other) => string.Compare(Value, other?.Value, StringComparison.Ordinal);
         public static bool operator ==(Email left, Email right) => left?.Equals(right) ?? right is null;
         public static bool operator !=(Email left, Email right) => !(left == right);
+
+        //Para flujos masivos
+        public static Result<Email> TryCreate(string email)
+        {
+            if (string.IsNullOrWhiteSpace(email))
+                return Result<Email>.Failure("El correo electrónico no puede estar vacío");
+
+            var trimmedValue = email.Trim().ToLowerInvariant();
+
+            if (trimmedValue.Length > MaxLength)
+                return Result<Email>.Failure($"El correo electrónico no puede exceder {MaxLength} caracteres");
+
+            if (!EmailRegex.IsMatch(trimmedValue))
+                return Result<Email>.Failure("Formato de correo electrónico inválido");
+
+            var parts = trimmedValue.Split('@');
+            if (parts.Length != 2)
+                return Result<Email>.Failure("El correo debe contener exactamente un @");
+
+            var domain = parts[1];
+            if (domain.Contains("..") || domain.StartsWith(".") || domain.EndsWith("."))
+                return Result<Email>.Failure("El dominio del correo electrónico no es válido");
+
+            try
+            {
+                return Result<Email>.Success(new Email(trimmedValue));
+            }
+            catch (Exception ex)
+            {
+                // Captura cualquier excepción no esperada durante la construcción
+                return Result<Email>.Failure($"Error inesperado al crear el email: {ex.Message}");
+            }
+        }
+
     }
 
     public sealed class Phone : IEquatable<Phone>, IComparable<Phone>
@@ -129,96 +167,243 @@ namespace ModuloClientes.Core.Models.ValueObjects.ClienteValueObjects
         private const int MaxLength = 15;
         private static readonly Regex PhoneRegex = new Regex(
             @"^\+?[0-9\s\-\(\)]+$",
-            RegexOptions.Compiled
+            RegexOptions.Compiled,
+            TimeSpan.FromMilliseconds(250)
         );
 
         public Phone(string value)
         {
             if (string.IsNullOrWhiteSpace(value))
-                throw new ArgumentNullException(nameof(value), "El teléfono no puede estar vacío");
+                throw new InvalidPhoneException("El teléfono no puede estar vacío", nameof(value));
 
             var digitsOnly = new string(value.Where(char.IsDigit).ToArray());
 
             if (digitsOnly.Length < MinLength)
-                throw new ArgumentException($"El teléfono debe tener al menos {MinLength} dígitos", nameof(value));
+                throw new InvalidPhoneException($"El teléfono debe tener al menos {MinLength} dígitos", nameof(value));
 
             if (digitsOnly.Length > MaxLength)
-                throw new ArgumentException($"El teléfono no puede exceder {MaxLength} dígitos", nameof(value));
+                throw new InvalidPhoneException($"El teléfono no puede exceder {MaxLength} dígitos", nameof(value));
 
             if (!PhoneRegex.IsMatch(value))
-                throw new ArgumentException("Formato de teléfono inválido", nameof(value));
+                throw new InvalidPhoneException("Formato de teléfono inválido", nameof(value));
+
+            if (digitsOnly.Length > 0 && !char.IsDigit(digitsOnly[0]))
+                throw new InvalidPhoneException("El teléfono debe comenzar con un dígito", nameof(value));
 
             Value = digitsOnly;
         }
 
-        public string Formatted => $"+{Value}";
+        public string Formatted => Value.Length > 10
+            ? $"+{Value.Substring(0, Value.Length - 10)} {Value.Substring(Value.Length - 10, 3)}-{Value.Substring(Value.Length - 7, 3)}-{Value.Substring(Value.Length - 4)}"
+            : $"+1 {Value.Substring(0, 3)}-{Value.Substring(3, 3)}-{Value.Substring(6)}";
+
         public override string ToString() => Value;
         public override bool Equals(object obj) => obj is Phone other && Equals(other);
-        public bool Equals([AllowNull] Phone other) => other != null && Value.Equals(other.Value);
+        public bool Equals([AllowNull] Phone other) => other != null && Value == other.Value;
         public override int GetHashCode() => Value.GetHashCode();
         public int CompareTo([AllowNull] Phone other) => string.Compare(Value, other?.Value, StringComparison.Ordinal);
         public static bool operator ==(Phone left, Phone right) => left?.Equals(right) ?? right is null;
         public static bool operator !=(Phone left, Phone right) => !(left == right);
     }
 
+    [Serializable]
     public sealed class SSN : IEquatable<SSN>, IComparable<SSN>
     {
         public string Value { get; }
-        private const int ExactLength = 9;
-        private static readonly Regex SsnRegex = new Regex(@"^\d{3}-\d{2}-\d{4}$");
 
-        public SSN(string value)
+        private const int RequiredDigits = 9;
+
+        private static readonly HashSet<string> InvalidSSNs = new HashSet<string>
         {
-            if (string.IsNullOrWhiteSpace(value))
-                throw new ArgumentNullException(nameof(value), "El SSN no puede estar vacío");
+            "000000000", "111111111", /* ... otros patrones inválidos ... */ "999999999",
+            "123456789", "987654321", "000112222"
+        };
 
-            var digitsOnly = new string(value.Where(char.IsDigit).ToArray());
+        private static readonly Regex[] Patterns =
+        {
+            new Regex(
+                @"^\d{3}-\d{2}-\d{4}$",
+                RegexOptions.Compiled | RegexOptions.CultureInvariant,
+                TimeSpan.FromMilliseconds(250)
+            ),
+            new Regex(
+                @"^\d{9}$",
+                RegexOptions.Compiled | RegexOptions.CultureInvariant,
+                TimeSpan.FromMilliseconds(250)
+            )
+        };
 
-            if (digitsOnly.Length != ExactLength)
-                throw new ArgumentException($"El SSN debe tener exactamente {ExactLength} dígitos", nameof(value));
+        public SSN(string ssn)
+        {
+            if (string.IsNullOrWhiteSpace(ssn))
+                throw new InvalidSSNException("El SSN no puede estar vacío.", nameof(ssn));
 
-            if (!SsnRegex.IsMatch(value) && digitsOnly.Length != value.Length)
-                throw new ArgumentException("Formato de SSN inválido. Use XXX-XX-XXXX o 9 dígitos", nameof(value));
+            var digits = new string(ssn.Where(char.IsDigit).ToArray());
+            if (digits.Length != RequiredDigits)
+                throw new InvalidSSNException($"El SSN debe contener exactamente {RequiredDigits} dígitos.", nameof(ssn));
 
-            Value = digitsOnly;
+            if (!Patterns.Any(p => p.IsMatch(ssn)))
+                throw new InvalidSSNException("Formato de SSN inválido. Use 'XXX-XX-XXXX' o 'XXXXXXXXX'.", nameof(ssn));
+
+            if (InvalidSSNs.Contains(digits))
+                throw new InvalidSSNException("SSN no válido (número reservado o inválido).", nameof(ssn));
+
+            if (!IsValidStructure(digits))
+                throw new InvalidSSNException("SSN no válido (estructura de área o grupo inválida).", nameof(ssn));
+
+            Value = digits;
+        }
+
+        private static bool IsValidStructure(string digits)
+        {
+            int area = int.Parse(digits.Substring(0, 3));
+            int group = int.Parse(digits.Substring(3, 2));
+
+            // El código de área no puede ser 000, 666 ni >= 900
+            if (area == 0 || area == 666 || area >= 900)
+                return false;
+
+            // El código de grupo no puede ser 00
+            if (group == 0)
+                return false;
+
+            return true;
         }
 
         public string Formatted => $"{Value.Substring(0, 3)}-{Value.Substring(3, 2)}-{Value.Substring(5, 4)}";
+        public string Masked => $"***-**-{Value.Substring(5, 4)}";
+
         public override string ToString() => Formatted;
-        public override bool Equals(object obj) => obj is SSN other && Equals(other);
-        public bool Equals([AllowNull] SSN other) => other != null && Value.Equals(other.Value);
-        public override int GetHashCode() => Value.GetHashCode();
-        public int CompareTo([AllowNull] SSN other) => string.Compare(Value, other?.Value, StringComparison.Ordinal);
-        public static bool operator ==(SSN left, SSN right) => left?.Equals(right) ?? right is null;
-        public static bool operator !=(SSN left, SSN right) => !(left == right);
+        public override bool Equals(object obj) => Equals(obj as SSN);
+        public bool Equals(SSN other) => other != null && Value == other.Value;
+        public override int GetHashCode() => Value.GetHashCode(StringComparison.Ordinal);
+        public int CompareTo(SSN other) => other == null ? 1 : string.Compare(Value, other.Value, StringComparison.Ordinal);
+
+        public static bool operator ==(SSN left, SSN right) => Equals(left, right);
+        public static bool operator !=(SSN left, SSN right) => !Equals(left, right);
     }
 
-    public sealed class Address
+    [Serializable]
+    public sealed class Address : IEquatable<Address>, IComparable<Address>
     {
         public string Value { get; }
-        private const int MaxLength = 200;
-        private const int MinLength = 5;
 
-        public Address(string value)
+        private const int RequiredMinLength = 5;
+        private const int RequiredMaxLength = 200;
+
+        public Address(string address)
         {
-            if (string.IsNullOrWhiteSpace(value))
-                throw new ArgumentNullException(nameof(value), "La dirección no puede estar vacía");
+            if (string.IsNullOrWhiteSpace(address))
+                throw new InvalidAddressException("La dirección no puede estar vacía.", nameof(address));
 
-            if (value.Length < MinLength)
-                throw new ArgumentException($"La dirección debe tener al menos {MinLength} caracteres", nameof(value));
+            var trimmed = address.Trim();
+            if (trimmed.Length < RequiredMinLength)
+                throw new InvalidAddressException($"La dirección debe tener al menos {RequiredMinLength} caracteres.", nameof(address));
 
-            if (value.Length > MaxLength)
-                throw new ArgumentException($"La dirección no puede exceder {MaxLength} caracteres", nameof(value));
+            if (trimmed.Length > RequiredMaxLength)
+                throw new InvalidAddressException($"La dirección no puede exceder {RequiredMaxLength} caracteres.", nameof(address));
 
-            Value = value.Trim();
+            Value = trimmed;
         }
 
         public override string ToString() => Value;
-        public override bool Equals(object obj) => obj is Address other && Equals(other);
-        public bool Equals([AllowNull] Address other) => other != null && Value.Equals(other.Value, StringComparison.OrdinalIgnoreCase);
+        public override bool Equals(object obj) => Equals(obj as Address);
+        public bool Equals([AllowNull] Address other) => other != null && string.Equals(Value, other.Value, StringComparison.OrdinalIgnoreCase);
+        public override int GetHashCode() => StringComparer.OrdinalIgnoreCase.GetHashCode(Value);
+        public int CompareTo([AllowNull] Address other) => other == null ? 1 : string.Compare(Value, other.Value, StringComparison.OrdinalIgnoreCase);
+        public static bool operator ==(Address left, Address right) => Equals(left, right);
+        public static bool operator !=(Address left, Address right) => !Equals(left, right);
+    }
+
+    public sealed class Oficio : IEquatable<Oficio>, IComparable<Oficio>
+    {
+        public string Value { get; }
+        private const int MaxLength = 50;
+        private const int MinLength = 3;
+
+        private static readonly Regex OficioRegex = new Regex(
+            @"^[\p{L}\s\-]+$",
+            RegexOptions.Compiled | RegexOptions.CultureInvariant,
+            TimeSpan.FromMilliseconds(250));
+
+        public Oficio(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+                throw new ArgumentException("El oficio no puede estar vacío", nameof(value));
+
+            var trimmedValue = value.Trim();
+
+            if (trimmedValue.Length < MinLength)
+                throw new ArgumentException($"El oficio debe tener al menos {MinLength} caracteres", nameof(value));
+
+            if (trimmedValue.Length > MaxLength)
+                throw new ArgumentException($"El oficio no puede exceder {MaxLength} caracteres", nameof(value));
+
+            if (!OficioRegex.IsMatch(trimmedValue))
+                throw new ArgumentException("El oficio contiene caracteres inválidos", nameof(value));
+
+            Value = trimmedValue.ToLowerInvariant();
+        }
+
+        public override string ToString() => Value;
+        public override bool Equals(object obj) => obj is Oficio other && Equals(other);
+        public bool Equals([AllowNull] Oficio other) => other != null && Value.Equals(other.Value, StringComparison.OrdinalIgnoreCase);
         public override int GetHashCode() => Value.GetHashCode(StringComparison.OrdinalIgnoreCase);
-        public int CompareTo([AllowNull] Address other) => string.Compare(Value, other?.Value, StringComparison.OrdinalIgnoreCase);
-        public static bool operator ==(Address left, Address right) => left?.Equals(right) ?? right is null;
-        public static bool operator !=(Address left, Address right) => !(left == right);
+        public int CompareTo([AllowNull] Oficio other) => string.Compare(Value, other?.Value, StringComparison.OrdinalIgnoreCase);
+        public static bool operator ==(Oficio left, Oficio right) => left?.Equals(right) ?? right is null;
+        public static bool operator !=(Oficio left, Oficio right) => !(left == right);
+        public bool EsMismoOficio(Oficio other) => 
+            other != null && Value.Equals(other.Value, StringComparison.OrdinalIgnoreCase);
+
+        public static Result<Oficio> TryCreate(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+                return Result<Oficio>.Failure("El oficio no puede estar vacío");
+
+            var trimmedValue = value.Trim();
+
+            if (trimmedValue.Length < MinLength)
+                return Result<Oficio>.Failure($"El oficio debe tener al menos {MinLength} caracteres");
+
+            if (trimmedValue.Length > MaxLength)
+                return Result<Oficio>.Failure($"El oficio no puede exceder {MaxLength} caracteres");
+
+            if (!OficioRegex.IsMatch(trimmedValue))
+                return Result<Oficio>.Failure("El oficio contiene caracteres inválidos");
+
+            return Result<Oficio>.Success(new Oficio(trimmedValue));
+        }
+    }
+
+    // Result Generic
+    public class Result<T>
+    {
+        public bool IsSuccess { get; }
+        public T Value { get; }
+        public string Error { get; }
+
+        private Result(T value)
+        {
+            IsSuccess = true;
+            Value = value;
+            Error = null;
+        }
+
+        private Result(string error)
+        {
+            IsSuccess = false;
+            Value = default;
+            Error = error;
+        }
+
+        public static Result<T> Success(T value) => new Result<T>(value);
+        public static Result<T> Failure(string error) => new Result<T>(error);
+
+        public void Deconstruct(out bool isSuccess, out T value, out string error)
+        {
+            isSuccess = IsSuccess;
+            value = Value;
+            error = Error;
+        }
     }
 }
