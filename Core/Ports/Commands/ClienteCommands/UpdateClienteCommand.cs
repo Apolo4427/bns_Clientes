@@ -5,7 +5,7 @@ namespace ModuloClientes.Core.Ports.Commands.ClienteCommands
     /// Propiedades nulas no se modificarán.
     /// </summary>
     public record UpdateClienteCommand(
-        int Id,
+        Guid Id,
         string? Nombre = null,
         string? Apellido = null,
         string? Correo = null,

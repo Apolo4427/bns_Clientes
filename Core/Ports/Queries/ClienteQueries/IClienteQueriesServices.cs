@@ -4,7 +4,7 @@ namespace ModuloClientes.Core.Ports.Queries.ClienteQueries
     /// <summary>
     /// Consulta para obtener un cliente por su identificador.
     /// </summary>
-    public record GetClienteByIdQuery(int Id);
+    public record GetClienteByIdQuery(Guid Id);
 
     /// <summary>
     /// Handler para GetClienteByIdQuery.

@@ -4,7 +4,7 @@ namespace ModuloClientes.Core.Ports.Queries.EmpresaQueries
     /// <summary>
     /// Consulta para obtener un empresa por su identificador.
     /// </summary>
-    public record GetEmpresaByIdQuery(int Id);
+    public record GetEmpresaByIdQuery(Guid Id);
 
     /// <summary>
     /// Handler para GetEmpresaByIdQuery.

@@ -17,6 +17,7 @@ namespace ModuloClientes.Infrastructure.Data.Configurations
             b.HasOne(cr => cr.Cliente)
              .WithMany(c => c.Relaciones)
              .HasForeignKey(cr => cr.ClienteId)
+             
              .OnDelete(DeleteBehavior.Restrict);
 
             b.HasOne(cr => cr.Relacionado)

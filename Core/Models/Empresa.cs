@@ -5,7 +5,7 @@ namespace ModuloClientes.Core.Models
 {
     public class Empresa
     {
-       public int Id { get; private set; }
+       public Guid Id { get; private set; }
 
         // Value Objects
         public CompanyName Nombre { get; private set; }
@@ -30,6 +30,7 @@ namespace ModuloClientes.Core.Models
             Email correoContacto,
             DateTime fechaConstitucion)
         {
+            Id = Guid.NewGuid();
             Nombre = nombre ?? throw new ArgumentNullException(nameof(nombre));
             Ein = ein ?? throw new ArgumentNullException(nameof(ein));
             Direccion = direccion ?? throw new ArgumentNullException(nameof(direccion));

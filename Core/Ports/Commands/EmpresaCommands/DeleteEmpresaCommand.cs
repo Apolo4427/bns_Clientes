@@ -1,4 +1,4 @@
 namespace ModuloClientes.Core.Ports.Commands.EmpresaCommands
 {
-    public record DeleteEmpresaCommand(int Id);
+    public record DeleteEmpresaCommand(Guid Id);
 }

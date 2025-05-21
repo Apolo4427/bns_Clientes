@@ -21,6 +21,6 @@ namespace ModuloClientes.API.DTOs.Create
         public IList<string> Oficios { get; set; } = new List<string>();
 
         // (Opcional) Id de póliza de salud existente
-        public int? SeguroSaludId { get; set; }
+        public Guid? SeguroSaludId { get; set; }
     }
 }

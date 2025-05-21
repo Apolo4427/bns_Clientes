@@ -16,7 +16,7 @@ namespace ModuloClientes.Infrastructure.Persistence.Handlers.ClienteHandler
             _mapper = mapper;
         }
         
-        public async Task<int> HandleAsync(CreateClienteCommand command)
+        public async Task<Guid> HandleAsync(CreateClienteCommand command)
         {
             var cliente = _mapper.Map<Cliente>(command);  
             await _repository.AddAsync(cliente);

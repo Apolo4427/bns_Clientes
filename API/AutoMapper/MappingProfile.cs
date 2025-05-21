@@ -1,5 +1,3 @@
-using System;
-using System.Linq;
 using AutoMapper;
 using ModuloClientes.Core.Models;
 using ModuloClientes.Core.Enums;

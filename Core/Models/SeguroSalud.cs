@@ -5,7 +5,7 @@ namespace ModuloClientes.Core.Models
 {
     public class SeguroSalud
     {
-        public int Id { get; private set; }
+        public Guid Id { get; private set; }
 
         // Value Objects
         public CompanyName Proveedor { get; private set; }
@@ -34,6 +34,7 @@ namespace ModuloClientes.Core.Models
             DateTime fechaFin,
             decimal primaMensual)
         {
+            Id = Guid.NewGuid();
             Proveedor = proveedor ?? throw new ArgumentNullException(nameof(proveedor));
             NombrePlan = nombrePlan ?? throw new ArgumentNullException(nameof(nombrePlan));
             NumeroPoliza = numeroPoliza ?? throw new ArgumentNullException(nameof(numeroPoliza));

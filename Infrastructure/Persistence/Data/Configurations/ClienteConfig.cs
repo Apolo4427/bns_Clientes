@@ -13,6 +13,12 @@ namespace ModuloClientes.Infrastructure.Data.Configurations
 
             // PK, propiedades escalares, índices, etc.
             builder.HasKey(c => c.Id);
+            // Guid
+            builder.Property(c => c.Id)
+                .HasColumnName("Id")
+                .HasColumnType("uniqueidentifier")
+                .ValueGeneratedOnAdd();
+            
             builder.Property(c => c.FechaNacimiento).IsRequired();
 
             // token de concurrencia

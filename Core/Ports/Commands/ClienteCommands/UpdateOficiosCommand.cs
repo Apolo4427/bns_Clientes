@@ -1,7 +1,7 @@
 namespace ModuloClientes.Core.Ports.Commands.ClienteCommands
 {
     public record UpdateOficiosCommand(
-        int ClienteId,
+        Guid ClienteId,
         IEnumerable<string> Oficios
     );
 }

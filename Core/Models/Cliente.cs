@@ -5,7 +5,7 @@ namespace ModuloClientes.Core.Models
 {
     public class Cliente
     {
-        public int Id { get; private set; } // Clave primaria
+        public Guid   Id { get; private set; } // Clave primaria
 
         // Datos personales
         public Name Nombre { get; private set; }
@@ -33,7 +33,7 @@ namespace ModuloClientes.Core.Models
         public ICollection<EmpresaCliente> Empresas { get; private set; } = new List<EmpresaCliente>();
 
         // Relacion con SeguroSalud
-        public int? SeguroSaludId { get; private set; }
+        public Guid? SeguroSaludId { get; private set; }
         public SeguroSalud? SeguroSalud { get; private set; }
         public byte[] RowVersion { get; private set; }
 
@@ -56,6 +56,7 @@ namespace ModuloClientes.Core.Models
             SSN socialSecurityNumber,
             Address direccion)
         {
+            Id = Guid.NewGuid();
             Nombre = nombre ?? throw new ArgumentNullException(nameof(nombre));
             Apellido = apellido ?? throw new ArgumentNullException(nameof(apellido));
             Correo = correo ?? throw new ArgumentNullException(nameof(correo));
@@ -233,7 +234,7 @@ namespace ModuloClientes.Core.Models
             Empresas.Add(vinculo);
         }
 
-        public void DesvincularEmpresa(int empresaId)
+        public void DesvincularEmpresa(Guid empresaId)
         {
             var ec = Empresas.FirstOrDefault(x => x.EmpresaId == empresaId)
                 ?? throw new KeyNotFoundException($"No existe vínculo con la empresa {empresaId}");

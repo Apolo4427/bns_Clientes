@@ -11,6 +11,11 @@ namespace ModuloClientes.Infrastructure.Data.Configurations
             builder.ToTable("Empresas");
 
             builder.HasKey(e => e.Id);
+            // Guid
+            builder.Property(e => e.Id)
+                .HasColumnName("Id")
+                .HasColumnType("uniqueidentifier")
+                .ValueGeneratedOnAdd();
 
             builder.Property(e => e.FechaConstitucion)
                    .IsRequired();
