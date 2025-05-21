@@ -28,6 +28,9 @@ namespace ModuloClientes.Infrastructure.Data
             // Aplicar configuraciones para Cliente
             modelBuilder.ApplyConfiguration(new ClienteConfig());
 
+            // Aplicar configuracion para Empleado
+            modelBuilder.ApplyConfiguration(new EmpresaConfig());
+
             // Relación SeguroSalud ↔ Cliente (1:N)
             modelBuilder.Entity<Cliente>()
                 .HasOne(c => c.SeguroSalud)

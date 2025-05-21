@@ -1,108 +1,129 @@
+using ModuloClientes.Core.Models.ValueObjects.EmpresaValueObjects;
+using ModuloClientes.Core.Models.ValueObjects.SeguroSaludValueObjects;
+
 namespace ModuloClientes.Core.Models
 {
     public class SeguroSalud
     {
         public int Id { get; private set; }
-        public string Proveedor { get; private set; }
-        public string NombrePlan { get; private set; }
-        public string NumeroPoliza { get; private set; }
+
+        // Value Objects
+        public CompanyName Proveedor { get; private set; }
+        public PlanName NombrePlan { get; private set; }
+        public PolicyNumber NumeroPoliza { get; private set; }
+
+        // Fechas de vigencia
         public DateTime FechaInicio { get; private set; }
         public DateTime FechaFin { get; private set; }
+
+        // Monto de la prima mensual
         public decimal PrimaMensual { get; private set; }
 
+        // Clientes afiliados
         public ICollection<Cliente> Clientes { get; private set; } = new List<Cliente>();
 
-        // Constructor vacio
-        private SeguroSalud()
-        {
-#pragma warning disable CS8618
-#pragma warning restore CS8618
-        }
+        // Constructor para EF Core
+        private SeguroSalud() { }
 
+        // Constructor de dominio
         public SeguroSalud(
-            string proveedor,
-            string nombrePlan,
-            string numeroPoliza,
+            CompanyName proveedor,
+            PlanName nombrePlan,
+            PolicyNumber numeroPoliza,
             DateTime fechaInicio,
             DateTime fechaFin,
             decimal primaMensual)
         {
-            if (string.IsNullOrWhiteSpace(proveedor))
-                throw new ArgumentException("El proveedor es obligatorio", nameof(proveedor));
-            if (string.IsNullOrWhiteSpace(nombrePlan))
-                throw new ArgumentException("El nombre del plan es obligatorio", nameof(nombrePlan));
-            if (string.IsNullOrWhiteSpace(numeroPoliza))
-                throw new ArgumentException("El número de póliza es obligatorio", nameof(numeroPoliza));
-            if (fechaFin <= fechaInicio)
-                throw new ArgumentException("La fecha de fin debe ser posterior a la de inicio", nameof(fechaFin));
-            if (primaMensual < 0)
-                throw new ArgumentOutOfRangeException(nameof(primaMensual), "La prima mensual debe ser no negativa");
+            Proveedor = proveedor ?? throw new ArgumentNullException(nameof(proveedor));
+            NombrePlan = nombrePlan ?? throw new ArgumentNullException(nameof(nombrePlan));
+            NumeroPoliza = numeroPoliza ?? throw new ArgumentNullException(nameof(numeroPoliza));
 
-            Proveedor = proveedor;
-            NombrePlan = nombrePlan;
-            NumeroPoliza = numeroPoliza;
+            if (fechaInicio == default)
+                throw new ArgumentException("Fecha de inicio inválida.", nameof(fechaInicio));
+            if (fechaFin <= fechaInicio)
+                throw new ArgumentException("La fecha de fin debe ser posterior a la de inicio.", nameof(fechaFin));
+
             FechaInicio = fechaInicio;
             FechaFin = fechaFin;
+
+            if (primaMensual < 0)
+                throw new ArgumentOutOfRangeException(nameof(primaMensual), "La prima mensual debe ser no negativa.");
+
             PrimaMensual = primaMensual;
         }
 
-        public void RenovarPolizaActual(DateTime nuevaFechaFin)
+        // Métodos de actualización
+        public void CambiarProveedor(CompanyName nuevoProveedor)
+        {
+            if (nuevoProveedor is null)
+                throw new ArgumentNullException(nameof(nuevoProveedor));
+            if (nuevoProveedor.Equals(Proveedor))
+                return;
+            Proveedor = nuevoProveedor;
+        }
+
+        public void CambiarNombrePlan(PlanName nuevoNombrePlan)
+        {
+            if (nuevoNombrePlan is null)
+                throw new ArgumentNullException(nameof(nuevoNombrePlan));
+            if (nuevoNombrePlan.Equals(NombrePlan))
+                return;
+            NombrePlan = nuevoNombrePlan;
+        }
+
+        public void CambiarNumeroPoliza(PolicyNumber nuevoNumero)
+        {
+            if (nuevoNumero is null)
+                throw new ArgumentNullException(nameof(nuevoNumero));
+            if (nuevoNumero.Equals(NumeroPoliza))
+                return;
+            NumeroPoliza = nuevoNumero;
+        }
+
+        public void CambiarFechaInicio(DateTime nuevaFechaInicio)
+        {
+            if (nuevaFechaInicio == default)
+                throw new ArgumentException("Fecha de inicio inválida.", nameof(nuevaFechaInicio));
+            if (nuevaFechaInicio > DateTime.Today)
+                throw new ArgumentException("La fecha de inicio no puede ser futura.", nameof(nuevaFechaInicio));
+            if (nuevaFechaInicio.Equals(FechaInicio))
+                return;
+            FechaInicio = nuevaFechaInicio;
+        }
+
+        public void RenovarPoliza(DateTime nuevaFechaFin)
         {
             if (nuevaFechaFin <= FechaFin)
-                throw new ArgumentException("La nueva fecha de fin debe ser posterior a la fecha actual de fin", nameof(nuevaFechaFin));
+                throw new ArgumentException("La nueva fecha de fin debe ser posterior a la fecha actual de fin.", nameof(nuevaFechaFin));
             FechaFin = nuevaFechaFin;
         }
 
-        public void CambiarProveedor(string proveedor)
+        public void CambiarPrimaMensual(decimal nuevaPrima)
         {
-            if (string.IsNullOrWhiteSpace(proveedor))
-                throw new ArgumentException("El proveedor no puede estar vacio", nameof(proveedor));
-            Proveedor = proveedor;
+            if (nuevaPrima < 0)
+                throw new ArgumentOutOfRangeException(nameof(nuevaPrima), "La prima mensual no puede ser negativa.");
+            if (nuevaPrima == PrimaMensual)
+                return;
+            PrimaMensual = nuevaPrima;
         }
 
-        public void CambiarNombrePlan(string nombrePlan)
-        {
-            if (string.IsNullOrWhiteSpace(nombrePlan))
-                throw new ArgumentException("E' nombre del plan no puede estar vacio", nameof(nombrePlan));
-            NombrePlan = nombrePlan;
-        }
-
-        public void CambiarNumeroPoliza(string numeroPoliza)
-        {
-            if (string.IsNullOrWhiteSpace(numeroPoliza))
-                throw new ArgumentException("El numero de la poliza no puede estar vacio", nameof(numeroPoliza));
-            NumeroPoliza = numeroPoliza;
-        }
-
-        public void CambiarFechaInicio(DateTime fecha)
-        {
-            if (fecha > DateTime.Now)
-                throw new ArgumentException("La fecha no puede ser superior a la fecha actual", nameof(fecha));
-            FechaInicio = fecha;
-        }
-
-        public void CambiarPrimaMensual(decimal prima)
-        {
-            if (prima < 0)
-                throw new ArgumentException("La prima mensual no puede ser menor a 0", nameof(prima));
-            PrimaMensual = prima;
-        }
-
-        public void AfiliarClienteAPoliza(Cliente cliente)
+        // Asociación con clientes
+        public void AfiliarCliente(Cliente cliente)
         {
             if (cliente is null)
                 throw new ArgumentNullException(nameof(cliente));
-
-            // Ya afiliado?
-            if (Clientes.Any(c => c.Id == cliente.Id))
-                throw new InvalidOperationException(
-                    $"El cliente {cliente.Id} ya está afiliado a la póliza {NumeroPoliza}.");
-
-            // Agrega al cliente a esta póliza
+            if (Clientes.Contains(cliente))
+                return;
             Clientes.Add(cliente);
+        }
 
-            // Sincroniza la navegación inversa
-            cliente.AsignarSeguroSalud(this);
+        public void DesafiliarCliente(Cliente cliente)
+        {
+            if (cliente is null)
+                throw new ArgumentNullException(nameof(cliente));
+            if (!Clientes.Contains(cliente))
+                throw new InvalidOperationException("El cliente no está afiliado a esta póliza.");
+            Clientes.Remove(cliente);
         }
     }
 }

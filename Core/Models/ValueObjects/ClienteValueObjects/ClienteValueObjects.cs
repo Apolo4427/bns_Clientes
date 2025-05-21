@@ -4,6 +4,9 @@ using ModuloClientes.Core.Models.ValueObjects.ValueObjectsExceptions.ClienteValu
 
 namespace ModuloClientes.Core.Models.ValueObjects.ClienteValueObjects
 {
+    /// </summary>
+    /// nombre del cliente 
+    /// </summary>
     public sealed class Name : IEquatable<Name>, IComparable<Name>
     {
         public string Value { get; }
@@ -39,8 +42,36 @@ namespace ModuloClientes.Core.Models.ValueObjects.ClienteValueObjects
         public int CompareTo([AllowNull] Name other) => string.Compare(Value, other?.Value, StringComparison.OrdinalIgnoreCase);
         public static bool operator ==(Name left, Name right) => left?.Equals(right) ?? right is null;
         public static bool operator !=(Name left, Name right) => !(left == right);
-    }
 
+        public static Result<Name> TryCreate(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+                return Result<Name>.Failure("El nombre es obligatorio");
+
+            var trimmedValue = value.Trim();
+
+            if (trimmedValue.Length < MinLength)
+                return Result<Name>.Failure($"El nombre debe tener al menos {MinLength} caracteres");
+
+            if (trimmedValue.Length > MaxLength)
+                return Result<Name>.Failure($"El nombre no puede exceder {MaxLength} caracteres");
+
+            if (!NameRegex.IsMatch(trimmedValue))
+                return Result<Name>.Failure("El nombre contiene caracteres inválidos");
+
+            try
+            {
+                return Result<Name>.Success(new Name(trimmedValue));
+            }
+            catch (Exception ex)
+            {
+                return Result<Name>.Failure($"Error inesperado al crear el nombre: {ex.Message}");
+            }
+        }
+    }
+    /// </summary>
+    /// apellido del cliente
+    /// </summary>
     public sealed class Surname : IEquatable<Surname>, IComparable<Surname>
     {
         public string Value { get; }
@@ -78,6 +109,31 @@ namespace ModuloClientes.Core.Models.ValueObjects.ClienteValueObjects
         public int CompareTo([AllowNull] Surname other) => string.Compare(Value, other?.Value, StringComparison.OrdinalIgnoreCase);
         public static bool operator ==(Surname left, Surname right) => left?.Equals(right) ?? right is null;
         public static bool operator !=(Surname left, Surname right) => !(left == right);
+        public static Result<Surname> TryCreate(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+                return Result<Surname>.Failure("El apellido no puede estar vacío");
+
+            var trimmedValue = value.Trim();
+
+            if (trimmedValue.Length < MinLength)
+                return Result<Surname>.Failure($"El apellido debe tener al menos {MinLength} caracteres");
+
+            if (trimmedValue.Length > MaxLength)
+                return Result<Surname>.Failure($"El apellido no puede exceder {MaxLength} caracteres");
+
+            if (!SurnameRegex.IsMatch(trimmedValue))
+                return Result<Surname>.Failure("El apellido contiene caracteres inválidos");
+
+            try
+            {
+                return Result<Surname>.Success(new Surname(trimmedValue));
+            }
+            catch (Exception ex)
+            {
+                return Result<Surname>.Failure($"Error inesperado al crear el apellido: {ex.Message}");
+            }
+        }
 
     }
 
@@ -204,6 +260,35 @@ namespace ModuloClientes.Core.Models.ValueObjects.ClienteValueObjects
         public int CompareTo([AllowNull] Phone other) => string.Compare(Value, other?.Value, StringComparison.Ordinal);
         public static bool operator ==(Phone left, Phone right) => left?.Equals(right) ?? right is null;
         public static bool operator !=(Phone left, Phone right) => !(left == right);
+
+        public static Result<Phone> TryCreate(string value)
+        {
+            if (string.IsNullOrWhiteSpace(value))
+                return Result<Phone>.Failure("El teléfono no puede estar vacío");
+
+            var digitsOnly = new string(value.Where(char.IsDigit).ToArray());
+
+            if (digitsOnly.Length < MinLength)
+                return Result<Phone>.Failure($"El teléfono debe tener al menos {MinLength} dígitos");
+
+            if (digitsOnly.Length > MaxLength)
+                return Result<Phone>.Failure($"El teléfono no puede exceder {MaxLength} dígitos");
+
+            if (!PhoneRegex.IsMatch(value))
+                return Result<Phone>.Failure("Formato de teléfono inválido");
+
+            if (digitsOnly.Length > 0 && !char.IsDigit(digitsOnly[0]))
+                return Result<Phone>.Failure("El teléfono debe comenzar con un dígito");
+
+            try
+            {
+                return Result<Phone>.Success(new Phone(value));
+            }
+            catch (Exception ex)
+            {
+                return Result<Phone>.Failure($"Error inesperado al crear el teléfono: {ex.Message}");
+            }
+        }
     }
 
     [Serializable]
@@ -281,6 +366,35 @@ namespace ModuloClientes.Core.Models.ValueObjects.ClienteValueObjects
 
         public static bool operator ==(SSN left, SSN right) => Equals(left, right);
         public static bool operator !=(SSN left, SSN right) => !Equals(left, right);
+
+        public static Result<SSN> TryCreate(string ssn)
+        {
+            if (string.IsNullOrWhiteSpace(ssn))
+                return Result<SSN>.Failure("El SSN no puede estar vacío");
+
+            var digits = new string(ssn.Where(char.IsDigit).ToArray());
+
+            if (digits.Length != RequiredDigits)
+                return Result<SSN>.Failure($"El SSN debe contener exactamente {RequiredDigits} dígitos");
+
+            if (!Patterns.Any(p => p.IsMatch(ssn)))
+                return Result<SSN>.Failure("Formato de SSN inválido. Use 'XXX-XX-XXXX' o 'XXXXXXXXX'");
+
+            if (InvalidSSNs.Contains(digits))
+                return Result<SSN>.Failure("SSN no válido (número reservado o inválido)");
+
+            if (!IsValidStructure(digits))
+                return Result<SSN>.Failure("SSN no válido (estructura de área o grupo inválida)");
+
+            try
+            {
+                return Result<SSN>.Success(new SSN(ssn));
+            }
+            catch (Exception ex)
+            {
+                return Result<SSN>.Failure($"Error inesperado al crear el SSN: {ex.Message}");
+            }
+        }
     }
 
     [Serializable]
@@ -313,6 +427,28 @@ namespace ModuloClientes.Core.Models.ValueObjects.ClienteValueObjects
         public int CompareTo([AllowNull] Address other) => other == null ? 1 : string.Compare(Value, other.Value, StringComparison.OrdinalIgnoreCase);
         public static bool operator ==(Address left, Address right) => Equals(left, right);
         public static bool operator !=(Address left, Address right) => !Equals(left, right);
+        public static Result<Address> TryCreate(string address)
+        {
+            if (string.IsNullOrWhiteSpace(address))
+                return Result<Address>.Failure("La dirección no puede estar vacía");
+
+            var trimmed = address.Trim();
+
+            if (trimmed.Length < RequiredMinLength)
+                return Result<Address>.Failure($"La dirección debe tener al menos {RequiredMinLength} caracteres");
+
+            if (trimmed.Length > RequiredMaxLength)
+                return Result<Address>.Failure($"La dirección no puede exceder {RequiredMaxLength} caracteres");
+
+            try
+            {
+                return Result<Address>.Success(new Address(trimmed));
+            }
+            catch (Exception ex)
+            {
+                return Result<Address>.Failure($"Error inesperado al crear la dirección: {ex.Message}");
+            }
+        }
     }
 
     public sealed class Oficio : IEquatable<Oficio>, IComparable<Oficio>
@@ -352,7 +488,7 @@ namespace ModuloClientes.Core.Models.ValueObjects.ClienteValueObjects
         public int CompareTo([AllowNull] Oficio other) => string.Compare(Value, other?.Value, StringComparison.OrdinalIgnoreCase);
         public static bool operator ==(Oficio left, Oficio right) => left?.Equals(right) ?? right is null;
         public static bool operator !=(Oficio left, Oficio right) => !(left == right);
-        public bool EsMismoOficio(Oficio other) => 
+        public bool EsMismoOficio(Oficio other) =>
             other != null && Value.Equals(other.Value, StringComparison.OrdinalIgnoreCase);
 
         public static Result<Oficio> TryCreate(string value)

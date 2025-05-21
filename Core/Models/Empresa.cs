@@ -1,93 +1,104 @@
+using ModuloClientes.Core.Models.ValueObjects.ClienteValueObjects;
+using ModuloClientes.Core.Models.ValueObjects.EmpresaValueObjects;
+
 namespace ModuloClientes.Core.Models
 {
     public class Empresa
     {
-        public int Id { get; private set; }
-        public string Nombre { get; private set; }
-        public string EIN { get; private set; }             // Employer Identification Number
-        public string Direccion { get; private set; }
-        public string Telefono { get; private set; }
-        public string CorreoContacto { get; private set; }
+       public int Id { get; private set; }
+
+        // Value Objects
+        public CompanyName Nombre { get; private set; }
+        public EIN Ein { get; private set; }
+        public Address Direccion { get; private set; }
+        public Phone Telefono { get; private set; }
+        public Email CorreoContacto { get; private set; }
         public DateTime FechaConstitucion { get; private set; }
 
         // Relación con Clientes
         public ICollection<EmpresaCliente> Clientes { get; private set; } = new List<EmpresaCliente>();
 
-        // Constructor vacio:
-        private Empresa() 
-        {
-            #pragma warning disable CS8618
-            #pragma warning restore CS8618
-        }
+        // Constructor para EF
+        private Empresa() { }
 
+        // Constructor de dominio
         public Empresa(
-            string nombre,
-            string ein,
-            string direccion,
-            string telefono,
-            string correoContacto,
+            CompanyName nombre,
+            EIN ein,
+            Address direccion,
+            Phone telefono,
+            Email correoContacto,
             DateTime fechaConstitucion)
         {
-            if (string.IsNullOrWhiteSpace(nombre))
-                throw new ArgumentException("El nombre es obligatorio", nameof(nombre));
-            if (string.IsNullOrWhiteSpace(ein))
-                throw new ArgumentException("El EIN es obligatorio", nameof(ein));
-            if (string.IsNullOrWhiteSpace(direccion))
-                throw new ArgumentException("La direccion es obligatoria", nameof(direccion));
-            if (string.IsNullOrWhiteSpace(telefono))
-                throw new ArgumentException("El telefono es obligatorio", nameof(telefono));
-            if (string.IsNullOrWhiteSpace(correoContacto))
-                throw new ArgumentException("El correo de contacto es obligatorio", nameof(correoContacto));
+            Nombre = nombre ?? throw new ArgumentNullException(nameof(nombre));
+            Ein = ein ?? throw new ArgumentNullException(nameof(ein));
+            Direccion = direccion ?? throw new ArgumentNullException(nameof(direccion));
+            Telefono = telefono ?? throw new ArgumentNullException(nameof(telefono));
+            CorreoContacto = correoContacto ?? throw new ArgumentNullException(nameof(correoContacto));
 
-            Nombre = nombre;
-            EIN = ein;
-            Direccion = direccion;
-            Telefono = telefono;
-            CorreoContacto = correoContacto;
+            if (fechaConstitucion == default)
+                throw new ArgumentException("Fecha de constitución inválida.", nameof(fechaConstitucion));
+            if (fechaConstitucion > DateTime.Today)
+                throw new ArgumentException("La fecha de constitución no puede ser futura.", nameof(fechaConstitucion));
+
             FechaConstitucion = fechaConstitucion;
         }
 
-
-        public void CambiarNombre(string nombre)
+        // Métodos de actualización (nivel senior)
+        public void CambiarNombre(CompanyName nuevoNombre)
         {
-            if (string.IsNullOrWhiteSpace(nombre))
-                throw new ArgumentException("El nombre no puede estar vacio", nameof(nombre));
-            Nombre = nombre;
+            if (nuevoNombre is null)
+                throw new ArgumentNullException(nameof(nuevoNombre));
+            if (nuevoNombre.Equals(Nombre))
+                return;
+            Nombre = nuevoNombre;
         }
 
-        public void CambiarEin(string ein)
+        public void CambiarEIN(EIN nuevoEin)
         {
-            if (string.IsNullOrWhiteSpace(ein))
-                throw new ArgumentException("El EIN no puede estar vacio", nameof(ein));
-            EIN = ein;
+            if (nuevoEin is null)
+                throw new ArgumentNullException(nameof(nuevoEin));
+            if (nuevoEin.Equals(Ein))
+                return;
+            Ein = nuevoEin;
         }
 
-        public void CambiarDireccion(string nuevaDireccion)
+        public void CambiarDireccion(Address nuevaDireccion)
         {
-            if (string.IsNullOrWhiteSpace(nuevaDireccion))
-                throw new ArgumentException("La dirección no puede estar vacía", nameof(nuevaDireccion));
+            if (nuevaDireccion is null)
+                throw new ArgumentNullException(nameof(nuevaDireccion));
+            if (nuevaDireccion.Equals(Direccion))
+                return;
             Direccion = nuevaDireccion;
         }
 
-        public void CambiarTelefono(string nuevoTelefono)
+        public void CambiarTelefono(Phone nuevoTelefono)
         {
-            if(string.IsNullOrWhiteSpace(nuevoTelefono))
-                throw new ArgumentException("La direccion nueva no puede estar vacia", nameof(nuevoTelefono));
-            this.Telefono = nuevoTelefono;
+            if (nuevoTelefono is null)
+                throw new ArgumentNullException(nameof(nuevoTelefono));
+            if (nuevoTelefono.Equals(Telefono))
+                return;
+            Telefono = nuevoTelefono;
         }
 
-        public void CambiarCorreo(string nuevoCorreo)
+        public void CambiarCorreoContacto(Email nuevoCorreo)
         {
-            if(string.IsNullOrWhiteSpace(nuevoCorreo))
-                throw new ArgumentException("El correo no puede estar vacio", nameof(nuevoCorreo));
-            this.CorreoContacto = nuevoCorreo;
+            if (nuevoCorreo is null)
+                throw new ArgumentNullException(nameof(nuevoCorreo));
+            if (nuevoCorreo.Equals(CorreoContacto))
+                return;
+            CorreoContacto = nuevoCorreo;
         }
 
-        public void CambiarFechaDeConstitucion(DateTime fecha)
+        public void CambiarFechaConstitucion(DateTime nuevaFechaConstitucion)
         {
-            if(fecha > DateTime.Now)
-                throw new ArgumentException("La fecha de constitucion de pude ser superior a la actual", nameof(fecha));
-            FechaConstitucion = fecha;
-        } 
+            if (nuevaFechaConstitucion == default)
+                throw new ArgumentException("Fecha de constitución inválida.", nameof(nuevaFechaConstitucion));
+            if (nuevaFechaConstitucion > DateTime.Today)
+                throw new ArgumentException("La fecha de constitución no puede ser futura.", nameof(nuevaFechaConstitucion));
+            if (nuevaFechaConstitucion.Equals(FechaConstitucion))
+                return;
+            FechaConstitucion = nuevaFechaConstitucion;
+        }
     }
 }
