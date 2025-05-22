@@ -1,3 +1,4 @@
+using ModuloClientes.Core.Models.ValueObjects.ClienteValueObjects;
 using ModuloClientes.Core.Ports.Commands.ClienteCommands;
 using ModuloClientes.Core.Ports.Repositories;
 
@@ -16,11 +17,20 @@ namespace ModuloClientes.Infrastructure.Persistence.Handlers.ClienteHandler
         {
             var cliente = await _repo.GetByIdAsync(command.ClienteId);
 
-            cliente.AgregarOficio(command.Oficio);
+            var nuevoOficio = new Oficio(command.Oficio);
+
+            cliente.AgregarOficio(nuevoOficio);
 
             await _repo.UpdateAsync(cliente);
 
-            return cliente.Oficios;
+            var response = new List<string>();
+
+            foreach (var o in cliente.Oficios)
+            {
+                response.Add(o.ToString());
+            }
+
+            return response;
         }
     }
 }

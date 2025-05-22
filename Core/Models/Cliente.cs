@@ -228,8 +228,6 @@ namespace ModuloClientes.Core.Models
         {
             if (this.Empresas.Any(e => e.EmpresaId == empresa.Id))
                 throw new InvalidOperationException($"El cliente ya está vinculado a la empresa {empresa.Id}");
-            // TODO: buscar la empresa con el Empresaid y asi asignar lo en constructor
-            // tambien buscar el objeto 
             var vinculo = new EmpresaCliente(this, empresa, rol, fecha);
             Empresas.Add(vinculo);
         }

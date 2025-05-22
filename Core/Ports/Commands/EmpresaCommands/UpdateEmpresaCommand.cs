@@ -1,7 +1,8 @@
 namespace ModuloClientes.Core.Ports.Commands.EmpresaCommands
 {
     public record UpdateEmpresaCommand(
-        int Id,
+        Guid Id,
+        byte[] RowVersion,
         string? Nombre = null,
         string? EIN = null,
         string? Direccion = null,

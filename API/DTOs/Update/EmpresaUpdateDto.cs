@@ -31,5 +31,8 @@ namespace ModuloClientes.API.DTOs.Update
         /// Fecha de constitución. Si es null, no se modifica.
         /// </summary>
         public DateTime? FechaConstitucion { get; set; }
+
+        /// <summary>Token de concurrencia (rowversion) en base64</summary>
+        public byte[] RowVersion { get; private set; } = null!; //Base64
     }
 }

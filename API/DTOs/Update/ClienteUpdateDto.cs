@@ -29,7 +29,7 @@ namespace ModuloClientes.API.DTOs.Update
         /// <summary>
         /// Por si se equivocaron asignando la fecha de nacimiento 
         /// </summary>
-        public DateTime? FechaDeNacimiento { get; set;}
+        public DateTime? FechaDeNacimiento { get; set; }
 
         /// <summary>
         /// Nueva dirección.
@@ -45,6 +45,9 @@ namespace ModuloClientes.API.DTOs.Update
         /// Nuevo estado tributario.
         /// </summary>
         public string? EstadoTributario { get; set; }
+
+         /// <summary>Token de concurrencia (rowversion) en base64</summary>
+        public string RowVersion { get; set; } = null!; // base64
 
     }
 }

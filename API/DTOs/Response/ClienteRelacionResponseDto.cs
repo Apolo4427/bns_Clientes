@@ -7,7 +7,7 @@ namespace ModuloClientes.API.DTOs.Response
     /// </summary>
     public class ClienteRelacionResponseDto
     {
-        public int ClienteId { get; set; }
+        public Guid ClienteId { get; set; }
         public string NombreCliente { get; set; } = null!;
         public int RelacionadoId { get; set; }
         public string NombreRelacionado { get; set; } = null!;

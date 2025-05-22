@@ -66,11 +66,11 @@ namespace ModuloClientes.API.Controllers
             var validationResult = await _createValidator.ValidateAsync(createDto);
 
             if (!validationResult.IsValid) 
-                BadRequest(validationResult.Errors);
+               return BadRequest(validationResult.Errors);
 
             var command = _mapper.Map<CreateClienteCommand>(createDto);
 
-            int newId = await _createHandler.HandleAsync(command);
+            Guid newId = await _createHandler.HandleAsync(command);
 
             var cliente = await _getClienteById.HandleAsync(new GetClienteByIdQuery(newId));
 
@@ -82,9 +82,9 @@ namespace ModuloClientes.API.Controllers
         /// <summary>
         /// Obtiene un cliente por su identificador.
         /// </summary>
-        [HttpGet("{id}")]
+        [HttpGet("{id:guid}")]
         [ProducesResponseType(typeof(ActionResult<ClienteResponseDto>), StatusCodes.Status200OK)]
-        public async Task<ActionResult<ClienteResponseDto>> GetById(int id)
+        public async Task<ActionResult<ClienteResponseDto>> GetById(Guid id)
         {
             var cliente = await _getClienteById.HandleAsync(new GetClienteByIdQuery(id));
             var dto = _mapper.Map<ClienteResponseDto>(cliente);
@@ -110,12 +110,12 @@ namespace ModuloClientes.API.Controllers
         /// <summary>
         /// Actualiza un cliente segun su id
         /// <summary>
-        [HttpPut("{id}")]
+        [HttpPut("{id:guid}")]
         [ProducesResponseType(typeof(ActionResult), StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult> Update(
-            int id,
+            Guid id,
             [FromBody] ClienteUpdateDto updateDto)
         {
             var validationResult = await _updateValidator.ValidateAsync(updateDto);
@@ -129,23 +129,22 @@ namespace ModuloClientes.API.Controllers
             try
             {
                 await _updateHandler.HandleAsync(command);
+                return NoContent();
             }
-            catch(KeyNotFoundException)
+            catch (KeyNotFoundException)
             {
                 return NotFound();
             }
-
-            return NoContent();
         }
 
         /// <summary>
-        /// Genera un vinculo nuevo entre un cliente y una empresa
+        /// Elimina un cliente segun su Id
         /// <summary>
-        [HttpDelete("{id}")]
+        [HttpDelete("{id:guid}")]
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult> Delete(int id)
+        public async Task<ActionResult> Delete(Guid id)
         {
             try
             {
@@ -165,13 +164,13 @@ namespace ModuloClientes.API.Controllers
         /// <summary>
         /// Agrega un oficio a un cliente segun si Id
         /// <summary>
-        [HttpPost("{clienteId}/agregarOficio")]
+        [HttpPost("{clienteId:guid}/agregarOficio")]
         [ProducesResponseType(typeof(IEnumerable<string>),
             StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<IEnumerable<string>>> AgregarOficio(
-            int clienteId,
+            Guid clienteId,
             [FromBody] string oficio
         )
         {
@@ -197,13 +196,13 @@ namespace ModuloClientes.API.Controllers
         /// <summary>
         /// Elimina un oficio del cliente segun su Id
         /// <summary>
-        [HttpPut("{clienteId}/eliminarOficio")]
+        [HttpPut("{clienteId:guid}/eliminarOficio")]
         [ProducesResponseType(typeof(IEnumerable<string>),
             StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<IEnumerable<string>>> EliminarOficio(
-            int clienteId,
+            Guid clienteId,
             [FromBody] string oficio
         )
         {
@@ -228,13 +227,13 @@ namespace ModuloClientes.API.Controllers
         /// <summary>
         /// Reemplaza la lista de oficios por una nueva, segun el id del cliente
         /// <summary>
-        [HttpPost("{clienteId}/reemplazarOficios")]
+        [HttpPost("{clienteId:guid}/reemplazarOficios")]
         [ProducesResponseType(typeof(IEnumerable<string>),
             StatusCodes.Status200OK)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<IEnumerable<string>>> ReemplazarOficios(
-            int clienteId,
+            Guid clienteId,
             [FromBody] IEnumerable<string> oficiosNuevos
         )
         {
@@ -261,12 +260,12 @@ namespace ModuloClientes.API.Controllers
         /// <summary>
         /// Genera un vinculo nuevo entre un cliente y una empresa
         /// <summary>
-        [HttpPost("{clienteId}/vincularEmpresa")]
+        [HttpPost("{clienteId:guid}/vincularEmpresa")]
         [ProducesResponseType(typeof(ActionResult), StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult> VinvularEmpresa(
-            int clienteId,
+            Guid clienteId,
             [FromBody] EmpresaClienteCreateDto dto)
         {
             var command = _mapper.Map<VincularEmpresaCommand>(dto)

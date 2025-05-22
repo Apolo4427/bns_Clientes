@@ -27,8 +27,10 @@ namespace ModuloClientes.Infrastructure.Data.Configurations
 
             // token de concurrencia
             b.Property(cr => cr.RowVersion)
-             .IsRowVersion()
-             .IsConcurrencyToken();
+                .IsRowVersion()
+                .IsConcurrencyToken()
+                .HasColumnName("RowVersion")
+                .HasColumnType("rowversion");
         }
     }
 }

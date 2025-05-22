@@ -4,7 +4,7 @@ namespace ModuloClientes.Core.Ports.Commands.ClienteCommands
     /// Handler para el comando CreateClienteCommand.
     /// </summary>
     public interface ICreateClienteCommandHandler
-        : ICommandHandler<CreateClienteCommand, int>
+        : ICommandHandler<CreateClienteCommand, Guid>
     {
         
     }

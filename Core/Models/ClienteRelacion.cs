@@ -4,10 +4,10 @@ namespace ModuloClientes.Core.Models
 {
     public class ClienteRelacion
     {
-        public int ClienteId { get; private set; } //TODO: cambiar int por Guid en los ids
+        public Guid ClienteId { get; private set; } //TODO: cambiar int por Guid en los ids
         public Cliente Cliente { get; private set; }
 
-        public int RelacionadoId { get; private set; }
+        public Guid RelacionadoId { get; private set; }
         public Cliente Relacionado { get; private set; }
 
         public TipoRelacion Tipo { get; private set; }

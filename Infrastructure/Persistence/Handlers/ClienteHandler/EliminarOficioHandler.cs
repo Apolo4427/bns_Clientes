@@ -1,4 +1,4 @@
-using ModuloClientes.Core.Ports.Commands;
+using ModuloClientes.Core.Models.ValueObjects.ClienteValueObjects;
 using ModuloClientes.Core.Ports.Commands.ClienteCommands;
 using ModuloClientes.Core.Ports.Repositories;
 
@@ -16,11 +16,20 @@ namespace ModuloClientes.Infrastructure.Persistence.Handlers.ClienteHandler
         {
             var cliente = await _repo.GetByIdAsync(command.ClienteId);
 
-            cliente.EliminarOficio(command.Oficio);
+            var oficioEliminado = new Oficio(command.Oficio);
+
+            cliente.EliminarOficio(oficioEliminado);
 
             await _repo.UpdateAsync(cliente);
 
-            return cliente.Oficios;
+            var oficios = new List<string>();
+
+            foreach (var o in cliente.Oficios)
+            {
+                oficios.Add(o.ToString());
+            }
+
+            return oficios;
         }
     }
 }

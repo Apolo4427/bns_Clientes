@@ -14,6 +14,7 @@ namespace ModuloClientes.Core.Models
         public Phone Telefono { get; private set; }
         public Email CorreoContacto { get; private set; }
         public DateTime FechaConstitucion { get; private set; }
+        public byte[] RowVersion { get; private set; }
 
         // Relación con Clientes
         public ICollection<EmpresaCliente> Clientes { get; private set; } = new List<EmpresaCliente>();

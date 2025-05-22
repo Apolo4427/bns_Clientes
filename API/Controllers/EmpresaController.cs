@@ -3,7 +3,6 @@ using FluentValidation;
 using Microsoft.AspNetCore.Mvc;
 using ModuloClientes.API.DTOs.Create;
 using ModuloClientes.API.DTOs.Response;
-using ModuloClientes.Core.Models;
 using ModuloClientes.Core.Ports.Commands.EmpresaCommands;
 using ModuloClientes.Core.Ports.Queries.EmpresaQueries;
 
@@ -44,7 +43,7 @@ namespace ModuloClientes.API.Controllers
 
             var command = _mapper.Map<CreateEmpresaCommand>(dto);
 
-            int newId = await _createEmpresaHandler.HandleAsync(command);
+            Guid newId = await _createEmpresaHandler.HandleAsync(command);
 
             var empresa = await _getEmpresaByIdHandler.HandleAsync(new GetEmpresaByIdQuery(newId));
 
@@ -56,8 +55,8 @@ namespace ModuloClientes.API.Controllers
         /// <summary>
         /// obtiene una empresa por su id
         /// <summary>
-        [HttpGet("{id}")]
-        public async Task<ActionResult<EmpresaResponseDto>> GetById(int id)
+        [HttpGet("{id:guid}")]
+        public async Task<ActionResult<EmpresaResponseDto>> GetById(Guid id)
         {
             var empresa = await _getEmpresaByIdHandler.HandleAsync(new GetEmpresaByIdQuery(id));
 

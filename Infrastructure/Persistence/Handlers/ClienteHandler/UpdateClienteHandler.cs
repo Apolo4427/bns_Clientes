@@ -1,3 +1,5 @@
+using System.Data;
+using ModuloClientes.Core.Models.ValueObjects.ClienteValueObjects;
 using ModuloClientes.Core.Ports.Commands.ClienteCommands;
 using ModuloClientes.Core.Ports.Repositories;
 
@@ -5,7 +7,6 @@ namespace ModuloClientes.Infrastructure.Persistence.Handlers.ClienteHandler
 {
     public class UpdateClienteHandler : IUpdateClienteCommandHandler
     {
-
         private readonly IClienteRepository _repo;
         public UpdateClienteHandler(IClienteRepository repository)
         {
@@ -15,26 +16,28 @@ namespace ModuloClientes.Infrastructure.Persistence.Handlers.ClienteHandler
         public async Task HandleAsync(UpdateClienteCommand command)
         {
             var cliente = await _repo.GetByIdAsync(command.Id);
+            if (cliente == null)
+                throw new ArgumentException($"No se encontro el cliente con el id {command.Id}");
 
             if (!string.IsNullOrWhiteSpace(command.Nombre))
-                cliente.CambiarNombre(command.Nombre);
+                cliente.CambiarNombre(new Name(command.Nombre));
             if (!string.IsNullOrWhiteSpace(command.Apellido))
-                cliente.CambiarApellido(command.Apellido);
+                cliente.CambiarApellido(new Surname(command.Apellido));
             if (!string.IsNullOrWhiteSpace(command.Correo))
-                cliente.CambiarCorreo(command.Correo);
+                cliente.CambiarCorreo(new Email(command.Correo));
             if (!string.IsNullOrWhiteSpace(command.Telefono))
-                cliente.CambiarTelefono(command.Telefono);
+                cliente.CambiarTelefono(new Phone(command.Telefono));
             if (command.FechaNacimiento.HasValue)
-                cliente.CambiarFechaDeNacimiento(command.FechaNacimiento.Value);
-            if (!string.IsNullOrWhiteSpace(command.EstadoCivil))
-                cliente.CambiarEstadoCivil(command.EstadoCivil);
-            if (!string.IsNullOrWhiteSpace(command.EstadoTributario))
-                cliente.CambiarEstadoTributario(command.EstadoTributario);
+                cliente.CambiarFechaNacimiento(command.FechaNacimiento.Value);
+            if (command.EstadoCivil.HasValue)
+                cliente.CambiarEstadoCivil(command.EstadoCivil.Value);
+            if (command.EstadoTributario.HasValue)
+                cliente.CambiarEstadoTributario(command.EstadoTributario.Value);
             if (!string.IsNullOrWhiteSpace(command.SocialSecurityNumber))
-                cliente.CambiarSocialSecurityNumber(command.SocialSecurityNumber);
+                cliente.CambiarSSN(new SSN(command.SocialSecurityNumber));
             if (!string.IsNullOrWhiteSpace(command.Direccion))
-                cliente.CambiarDireccion(command.Direccion);
-            
+                cliente.CambiarDireccion(new Address(command.Direccion));
+
             await _repo.UpdateAsync(cliente);
         }
     }

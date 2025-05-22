@@ -1,3 +1,5 @@
+using ModuloClientes.Core.Models.ValueObjects.ClienteValueObjects;
+using ModuloClientes.Core.Models.ValueObjects.EmpresaValueObjects;
 using ModuloClientes.Core.Ports.Commands.EmpresaCommands;
 using ModuloClientes.Core.Ports.Repositories;
 
@@ -15,19 +17,21 @@ namespace ModuloClientes.Infrastructure.Persistence.Handlers.EmpresaHandler
         public async Task HandleAsync(UpdateEmpresaCommand command)
         {
             var empresa = await _repository.GetByIdAsync(command.Id);
+            if (empresa == null)
+                throw new ArgumentException($"La empresa con Id: {command.Id} no se ha encontrado");
 
             if (!string.IsNullOrWhiteSpace(command.Nombre))
-                empresa.CambiarNombre(command.Nombre);
+                    empresa.CambiarNombre(new CompanyName(command.Nombre));
             if (!string.IsNullOrWhiteSpace(command.EIN))
-                empresa.CambiarEin(command.EIN);
+                empresa.CambiarEIN(new EIN(command.EIN));
             if (!string.IsNullOrWhiteSpace(command.Direccion))
-                empresa.CambiarDireccion(command.Direccion);
+                empresa.CambiarDireccion(new Address(command.Direccion));
             if (!string.IsNullOrWhiteSpace(command.Telefono))
-                empresa.CambiarTelefono(command.Telefono);
+                empresa.CambiarTelefono(new Phone(command.Telefono));
             if (!string.IsNullOrWhiteSpace(command.CorreoContacto))
-                empresa.CambiarCorreo(command.CorreoContacto);
+                empresa.CambiarCorreoContacto(new Email(command.CorreoContacto));
             if (command.FechaConstitucion.HasValue)
-                empresa.CambiarFechaDeConstitucion(command.FechaConstitucion.Value);
+                empresa.CambiarFechaConstitucion(command.FechaConstitucion.Value);
             
             await _repository.UpdateAsync(empresa);
         }

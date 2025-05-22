@@ -1,3 +1,5 @@
+using ModuloClientes.Core.Enums;
+
 namespace ModuloClientes.Core.Ports.Commands.ClienteCommands
 {
      /// <summary>
@@ -6,14 +8,15 @@ namespace ModuloClientes.Core.Ports.Commands.ClienteCommands
     /// </summary>
     public record UpdateClienteCommand(
         Guid Id,
+        byte[] RowVersion,
         string? Nombre = null,
         string? Apellido = null,
         string? Correo = null,
         string? Telefono = null,
         DateTime? FechaNacimiento = null,
-        string? EstadoCivil = null,
-        string? EstadoTributario = null,
+        MaritalStatus? EstadoCivil = null,
+        TaxStatus? EstadoTributario = null,
         string? SocialSecurityNumber = null,
-        string? Direccion = null
+        string? Direccion = null  
     );
 }

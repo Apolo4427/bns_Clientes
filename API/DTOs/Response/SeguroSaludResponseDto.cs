@@ -2,7 +2,7 @@ namespace ModuloClientes.API.DTOs.Response
 {
     public class SeguroSaludResponseDto
     {
-        public int Id { get; set; }
+        public Guid Id { get; set; }
         public string Proveedor { get; set; } = null!;
         public string NombrePlan { get; set; } = null!;
         public string NumeroPoliza { get; set; } = null!;

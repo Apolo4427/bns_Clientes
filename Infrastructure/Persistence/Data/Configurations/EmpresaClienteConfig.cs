@@ -23,8 +23,10 @@ namespace ModuloClientes.Infrastructure.Data.Configurations
                 .OnDelete(DeleteBehavior.Restrict);
 
             builder.Property(ec => ec.RowVersion)
-               .IsRowVersion()
-               .IsConcurrencyToken();
+                .IsRowVersion()
+                .IsConcurrencyToken()
+                .HasColumnName("RowVersion")
+                .HasColumnType("rowversion");;
         }
     }
 }

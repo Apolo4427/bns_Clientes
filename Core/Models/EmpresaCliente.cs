@@ -2,9 +2,9 @@ namespace ModuloClientes.Core.Models
 {
     public class EmpresaCliente
     {
-        public int ClienteId { get; private set; }
+        public Guid ClienteId { get; private set; }
         public Cliente Cliente { get; private set; }
-        public int EmpresaId { get; private set; }
+        public Guid EmpresaId { get; private set; }
         public Empresa Empresa { get; private set; }
         public string Rol { get; private set; }  // ej. "Dueño", "Socio"
         public DateTime FechaVinculacion { get; private set; }

@@ -33,8 +33,9 @@ namespace ModuloClientes.API.AutoMapper
             //
             // 2) DTOs de creación/actualización → Commands
             //
-            CreateMap<ClienteCreateDto, CreateClienteCommand>();             
-            CreateMap<ClienteUpdateDto, UpdateClienteCommand>();             
+            CreateMap<ClienteCreateDto, CreateClienteCommand>();
+            CreateMap<ClienteUpdateDto, UpdateClienteCommand>()
+                .ForMember(dto => dto.RowVersion, o => o.MapFrom(src => Convert.FromBase64String(src.RowVersion)));             
             
             CreateMap<EmpresaCreateDto, CreateEmpresaCommand>();             
             CreateMap<EmpresaUpdateDto, UpdateEmpresaCommand>();             
@@ -75,23 +76,24 @@ namespace ModuloClientes.API.AutoMapper
                     ctx.Mapper.Map<Phone>(src.Telefono),
                     ctx.Mapper.Map<Email>(src.CorreoContacto),
                     src.FechaConstitucion
-                ));                                                     
+                ));
 
             //
             // 4) Entidades → Response DTOs
             //
             CreateMap<Cliente, ClienteResponseDto>()
-                .ForMember(d => d.Nombre,            o => o.MapFrom(src => src.Nombre.Value))
-                .ForMember(d => d.Apellido,          o => o.MapFrom(src => src.Apellido.Value))
-                .ForMember(d => d.Correo,            o => o.MapFrom(src => src.Correo.Value))
-                .ForMember(d => d.Telefono,          o => o.MapFrom(src => src.Telefono.Value))
-                .ForMember(d => d.Direccion,         o => o.MapFrom(src => src.Direccion.Value))
-                .ForMember(d => d.Oficio,            o => o.MapFrom(src => src.Oficios))
-                .ForMember(d => d.Edad,              o => o.MapFrom(src => src.Edad))
-                .ForMember(d => d.NombreSeguroSalud, o => o.MapFrom(c => c.SeguroSalud != null 
-                                                                          ? c.SeguroSalud.NombrePlan.Value 
+                .ForMember(d => d.Nombre, o => o.MapFrom(src => src.Nombre.Value))
+                .ForMember(d => d.Apellido, o => o.MapFrom(src => src.Apellido.Value))
+                .ForMember(d => d.Correo, o => o.MapFrom(src => src.Correo.Value))
+                .ForMember(d => d.Telefono, o => o.MapFrom(src => src.Telefono.Value))
+                .ForMember(d => d.Direccion, o => o.MapFrom(src => src.Direccion.Value))
+                .ForMember(d => d.Oficio, o => o.MapFrom(src => src.Oficios))
+                .ForMember(d => d.Edad, o => o.MapFrom(src => src.Edad))
+                .ForMember(d => d.NombreSeguroSalud, o => o.MapFrom(c => c.SeguroSalud != null
+                                                                          ? c.SeguroSalud.NombrePlan.Value
                                                                           : null))
-                .ForMember(d => d.Empresas,          o => o.MapFrom(src => src.Empresas)); 
+                .ForMember(d => d.Empresas, o => o.MapFrom(src => src.Empresas))
+                .ForMember(d => d.RowVersion, o => o.MapFrom(src => Convert.ToBase64String(src.RowVersion))); 
 
             CreateMap<Empresa, EmpresaResponseDto>()
                 .ForMember(d => d.Nombre,           o => o.MapFrom(src => src.Nombre.Value))

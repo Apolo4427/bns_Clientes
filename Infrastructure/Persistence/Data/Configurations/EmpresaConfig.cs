@@ -69,6 +69,13 @@ namespace ModuloClientes.Infrastructure.Data.Configurations
             // Índice único sobre EIN (valor interno)
             builder.HasIndex(e => e.Ein.Value)
                    .IsUnique();
+
+            // Token de concurrencia
+             builder.Property(c => c.RowVersion)
+                .IsRowVersion()                // marca como rowversion
+                .IsConcurrencyToken()          // marca como token de concurrencia
+                .HasColumnName("RowVersion")
+                .HasColumnType("rowversion");  // SQL Server
         }
     }
 }
