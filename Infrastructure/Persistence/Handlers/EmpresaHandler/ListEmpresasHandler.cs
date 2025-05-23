@@ -15,7 +15,7 @@ namespace ModuloClientes.Infrastructure.Persistence.Handlers.EmpresaHandler
 
         public async Task<IEnumerable<Empresa>> HandleAsync(ListEmpresasQuery query)
         {
-            return await _repository.ListAsync();
+            return await _repository.ListAsync(query.PageNumber, query.PageSize);
         }
     }
 }

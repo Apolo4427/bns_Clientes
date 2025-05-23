@@ -1,5 +1,6 @@
 using FluentValidation;
 using ModuloClientes.API.DTOs.Update;
+using ModuloClientes.Core.Models.ValueObjects.ClienteValueObjects;
 
 namespace ModuloClientes.API.Validations.ClienteValidations
 {
@@ -7,11 +8,28 @@ namespace ModuloClientes.API.Validations.ClienteValidations
     {
         public ClienteUpdateValidation()
         {
+
+            // RowVersion (Base64)
+            RuleFor(x => x.RowVersion)
+                .NotEmpty().WithMessage("La versión de fila es obligatoria")
+                .Must(rv =>
+                {
+                    try { Convert.FromBase64String(rv); return true; }
+                    catch { return false; }
+                })
+                .WithMessage("RowVersion inválida");
+
+            // Nombre
             When(x => x.Nombre is not null, () =>
             {
                 RuleFor(x => x.Nombre)
                     .NotEmpty().WithMessage("El nombre no puede estar vacío.")
-                    .MaximumLength(100).WithMessage("El nombre no puede superar 100 caracteres.");
+                    .Custom((nommbre, context) =>
+                    {
+                        var result = Name.TryCreate(nommbre);
+                        if (!result.IsSuccess)
+                            context.AddFailure(result.Error);
+                    });
             });
 
             // Apellido
@@ -19,7 +37,12 @@ namespace ModuloClientes.API.Validations.ClienteValidations
             {
                 RuleFor(x => x.Apellido)
                     .NotEmpty().WithMessage("El apellido no puede estar vacío.")
-                    .MaximumLength(100).WithMessage("El apellido no puede superar 100 caracteres.");
+                    .Custom((apellido, contexto) =>
+                    {
+                        var result = Surname.TryCreate(apellido);
+                        if (!result.IsSuccess)
+                            contexto.AddFailure(result.Error);
+                    });
             });
 
             // Correo
@@ -28,7 +51,12 @@ namespace ModuloClientes.API.Validations.ClienteValidations
                 RuleFor(x => x.Correo)
                     .NotEmpty().WithMessage("El correo no puede estar vacío.")
                     .EmailAddress().WithMessage("Formato de correo inválido.")
-                    .MaximumLength(150).WithMessage("El correo no puede superar 150 caracteres.");
+                    .Custom((correo, contexto) =>
+                    {
+                        var result = Email.TryCreate(correo);
+                        if (!result.IsSuccess)
+                            contexto.AddFailure(result.Error);
+                    });
             });
 
             // Teléfono
@@ -36,12 +64,16 @@ namespace ModuloClientes.API.Validations.ClienteValidations
             {
                 RuleFor(x => x.Telefono)
                     .NotEmpty().WithMessage("El teléfono no puede estar vacío.")
-                    .Matches(@"^\+\d{1,3}\(\d{3}\)\d{6,10}$")
-                    .WithMessage("Formato inválido. Use +XX(XXX)XXXXXXX");
+                    .Custom((telefono, contexto) =>
+                    {
+                        var result = Phone.TryCreate(telefono);
+                        if (!result.IsSuccess)
+                            contexto.AddFailure(result.Error);
+                    });
             });
 
             // Fecha de nacimiento (si no quieres forzarla, hazla nullable en el DTO)
-            When(x => x.FechaDeNacimiento != default && x.FechaDeNacimiento is not null, () =>
+            When(x => x.FechaDeNacimiento.HasValue, () =>
             {
                 RuleFor(x => x.FechaDeNacimiento)
                     .GreaterThan(new DateTime(1900, 1, 1))
@@ -55,7 +87,12 @@ namespace ModuloClientes.API.Validations.ClienteValidations
             {
                 RuleFor(x => x.Direccion)
                     .NotEmpty().WithMessage("La dirección no puede estar vacía.")
-                    .MaximumLength(200).WithMessage("La dirección no puede superar 200 caracteres.");
+                    .Custom((direccion, contexto) =>
+                    {
+                        var result = Address.TryCreate(direccion);
+                        if (!result.IsSuccess)
+                            contexto.AddFailure(result.Error);
+                    });
             });
 
             // Estado civil
@@ -72,6 +109,18 @@ namespace ModuloClientes.API.Validations.ClienteValidations
                 RuleFor(x => x.EstadoTributario)
                     .NotEmpty().WithMessage("El estado tributario no puede estar vacío.")
                     .MaximumLength(50).WithMessage("El estado tributario no puede superar 50 caracteres.");
+            });
+
+            When(dot => dot.SocialSecurityNumber is not null, () =>
+            {
+                RuleFor(dto => dto.SocialSecurityNumber)
+                    .NotEmpty().WithMessage("El Social Security Number no puede estar vacio")
+                    .Custom((ssn,contexto)=>
+                    {
+                        var result = SSN.TryCreate(ssn);
+                        if (!result.IsSuccess)
+                            contexto.AddFailure(result.Error);
+                    });
             });
         }
     }

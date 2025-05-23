@@ -118,6 +118,7 @@ namespace ModuloClientes.API.Controllers
             Guid id,
             [FromBody] ClienteUpdateDto updateDto)
         {
+            // TODO: VALIDAR LAS VALIDACIONES 
             var validationResult = await _updateValidator.ValidateAsync(updateDto);
 
             if (!validationResult.IsValid)

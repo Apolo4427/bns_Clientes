@@ -15,9 +15,11 @@ namespace ModuloClientes.Infrastructure.Persistence.Handlers.ClienteHandler
 
         public async Task HandleAsync(UpdateClienteCommand command)
         {
-            var cliente = await _repo.GetByIdAsync(command.Id);
-            if (cliente == null)
-                throw new ArgumentException($"No se encontro el cliente con el id {command.Id}");
+            var cliente = await _repo.GetByIdAsync(command.Id)
+                ?? throw new ArgumentException($"No se encontro el cliente con el id {command.Id}");
+            
+            if (!cliente.RowVersion.SequenceEqual(command.RowVersion))
+                throw new DBConcurrencyException("El registro ha sido modificado por otro usuario. Por favor refresque los datos.");
 
             if (!string.IsNullOrWhiteSpace(command.Nombre))
                 cliente.CambiarNombre(new Name(command.Nombre));

@@ -33,6 +33,6 @@ namespace ModuloClientes.API.DTOs.Update
         public DateTime? FechaConstitucion { get; set; }
 
         /// <summary>Token de concurrencia (rowversion) en base64</summary>
-        public byte[] RowVersion { get; private set; } = null!; //Base64
+        public string RowVersion { get; private set; } = null!; //Base64
     }
 }

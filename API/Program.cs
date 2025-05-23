@@ -12,6 +12,9 @@ using ModuloClientes.Infrastructure.Data;
 using ModuloClientes.Infrastructure.Persistence.Handlers.EmpresaHandler;
 using ModuloClientes.Infrastructure.Persistence.Handlers.ClienteHandler;
 using ModuloClientes.Infrastructure.Persistence.Repository;
+using ModuloClientes.API.DTOs.Update;
+using ModuloClientes.Core.Models;
+using ModuloClientes.API.Validations.EmpresaValidations;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,6 +34,11 @@ builder.Services.AddAutoMapper(typeof(MappingProfile));
 
 // Validaciones Cliente
 builder.Services.AddScoped<IValidator<ClienteCreateDto>, ClienteCreateValidation>();
+builder.Services.AddScoped<IValidator<ClienteUpdateDto>, ClienteUpdateValidation>();
+
+// Validaciones Empresa
+builder.Services.AddScoped<IValidator<EmpresaCreateDto>, EmpresaCreateValidation>();
+builder.Services.AddScoped<IValidator<EmpresaUpdateDto>, EmpresaUpdateValidation>();
 
 // Repositorios 
 builder.Services.AddScoped<IClienteRepository, ClienteRepository>();

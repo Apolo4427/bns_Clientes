@@ -18,6 +18,6 @@ namespace ModuloClientes.API.DTOs.Response
 
         public Guid? SeguroSaludId { get; set; }
         public string? NombreSeguroSalud { get; set; }
-        public string RowVersion { get; set; } = null!; // base64
+        public string RowVersion { get; set; } = null!; 
     }
 }

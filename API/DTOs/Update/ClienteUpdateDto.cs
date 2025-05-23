@@ -46,6 +46,11 @@ namespace ModuloClientes.API.DTOs.Update
         /// </summary>
         public string? EstadoTributario { get; set; }
 
+        /// <summary>
+        /// Actualizar SSN en caso de error al registrarlo
+        /// <summary>
+        public string? SocialSecurityNumber { get; set; }
+
          /// <summary>Token de concurrencia (rowversion) en base64</summary>
         public string RowVersion { get; set; } = null!; // base64
 

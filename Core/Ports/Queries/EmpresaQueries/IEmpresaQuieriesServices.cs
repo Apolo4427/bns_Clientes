@@ -15,7 +15,10 @@ namespace ModuloClientes.Core.Ports.Queries.EmpresaQueries
     /// <summary>
     /// Consulta para listar todos las empresas.
     /// </summary>
-    public record ListEmpresasQuery();
+    public record ListEmpresasQuery(
+        int PageNumber =  1,
+        int PageSize = 15
+    );
 
     /// <summary>
     /// Handler pada ListEmpresasQuery

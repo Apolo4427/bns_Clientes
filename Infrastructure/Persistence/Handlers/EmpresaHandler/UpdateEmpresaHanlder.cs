@@ -1,3 +1,4 @@
+using System.Data;
 using ModuloClientes.Core.Models.ValueObjects.ClienteValueObjects;
 using ModuloClientes.Core.Models.ValueObjects.EmpresaValueObjects;
 using ModuloClientes.Core.Ports.Commands.EmpresaCommands;
@@ -16,9 +17,11 @@ namespace ModuloClientes.Infrastructure.Persistence.Handlers.EmpresaHandler
         }
         public async Task HandleAsync(UpdateEmpresaCommand command)
         {
-            var empresa = await _repository.GetByIdAsync(command.Id);
-            if (empresa == null)
-                throw new ArgumentException($"La empresa con Id: {command.Id} no se ha encontrado");
+            var empresa = await _repository.GetByIdAsync(command.Id)
+                ?? throw new ArgumentException($"La empresa con Id: {command.Id} no se ha encontrado");
+
+            if (!empresa.RowVersion.SequenceEqual(command.RowVersion))
+                throw new DBConcurrencyException("El registro ha sido modificado por otro usuario. Por favor refresque los datos.");
 
             if (!string.IsNullOrWhiteSpace(command.Nombre))
                     empresa.CambiarNombre(new CompanyName(command.Nombre));
