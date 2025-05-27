@@ -2,10 +2,11 @@ using AutoMapper;
 using ModuloClientes.Core.Ports.Commands.ClienteCommands;
 using ModuloClientes.Core.Ports.Repositories;
 using ModuloClientes.Core.Models;
+using MediatR;
 
 namespace ModuloClientes.Infrastructure.Persistence.Handlers.ClienteHandler
 {
-    public class CreateClienteHandler : ICreateClienteCommandHandler
+    public class CreateClienteHandler : IRequestHandler<CreateClienteCommand, Guid>
     {
         private readonly IClienteRepository _repository;
         private readonly IMapper _mapper;
@@ -16,10 +17,13 @@ namespace ModuloClientes.Infrastructure.Persistence.Handlers.ClienteHandler
             _mapper = mapper;
         }
         
-        public async Task<Guid> HandleAsync(CreateClienteCommand command)
+        public async Task<Guid> Handle(
+            CreateClienteCommand command,
+            CancellationToken ct
+        )
         {
             var cliente = _mapper.Map<Cliente>(command);  
-            await _repository.AddAsync(cliente);
+            await _repository.AddAsync(cliente, ct);
             return cliente.Id;  
         }
     }

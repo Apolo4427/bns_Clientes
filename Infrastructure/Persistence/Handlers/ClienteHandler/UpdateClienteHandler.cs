@@ -1,11 +1,12 @@
 using System.Data;
+using MediatR;
 using ModuloClientes.Core.Models.ValueObjects.ClienteValueObjects;
 using ModuloClientes.Core.Ports.Commands.ClienteCommands;
 using ModuloClientes.Core.Ports.Repositories;
 
 namespace ModuloClientes.Infrastructure.Persistence.Handlers.ClienteHandler
 {
-    public class UpdateClienteHandler : IUpdateClienteCommandHandler
+    public class UpdateClienteHandler : IRequestHandler<UpdateClienteCommand>
     {
         private readonly IClienteRepository _repo;
         public UpdateClienteHandler(IClienteRepository repository)
@@ -13,9 +14,9 @@ namespace ModuloClientes.Infrastructure.Persistence.Handlers.ClienteHandler
             _repo = repository;
         }
 
-        public async Task HandleAsync(UpdateClienteCommand command)
+        public async Task Handle(UpdateClienteCommand command, CancellationToken ct)
         {
-            var cliente = await _repo.GetByIdAsync(command.Id)
+            var cliente = await _repo.GetByIdAsync(command.Id, ct)
                 ?? throw new ArgumentException($"No se encontro el cliente con el id {command.Id}");
             
             if (!cliente.RowVersion.SequenceEqual(command.RowVersion))
@@ -40,7 +41,7 @@ namespace ModuloClientes.Infrastructure.Persistence.Handlers.ClienteHandler
             if (!string.IsNullOrWhiteSpace(command.Direccion))
                 cliente.CambiarDireccion(new Address(command.Direccion));
 
-            await _repo.UpdateAsync(cliente);
+            await _repo.UpdateAsync(cliente, ct);
         }
     }
 }

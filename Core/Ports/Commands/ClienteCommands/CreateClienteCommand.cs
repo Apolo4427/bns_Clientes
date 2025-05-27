@@ -1,6 +1,8 @@
+using MediatR;
+
 namespace ModuloClientes.Core.Ports.Commands.ClienteCommands
 {
-     /// <summary>
+    /// <summary>
     /// Comando para crear un nuevo cliente.
     /// </summary>
     public record CreateClienteCommand(
@@ -13,5 +15,5 @@ namespace ModuloClientes.Core.Ports.Commands.ClienteCommands
         string EstadoTributario,
         string SocialSecurityNumber,
         string Direccion
-    );
+    ) : IRequest<Guid>;
 }

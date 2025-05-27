@@ -16,49 +16,56 @@ namespace ModuloClientes.Infrastructure.Persistence.Repository
             _context = context;
         }
 
-        public async Task AddAsync(Cliente cliente)
+        public async Task AddAsync(Cliente cliente, CancellationToken ct)
         {
-            _context.Clientes.Add(cliente);
-            await _context.SaveChangesAsync();
+            await _context.Clientes.AddAsync(cliente,ct);
+            await _context.SaveChangesAsync(ct);
         }
 
-        public async Task DeleteAsync(Guid id)
+        public async Task DeleteAsync(Guid id, CancellationToken ct)
         {
-            var existente = await _context.Clientes.FindAsync(id)
+            var existente = await _context.Clientes.FindAsync(
+                new[] {id},
+                ct
+            )
                 ?? throw new KeyNotFoundException($"El cliente con el id {id} no existe");
             _context.Clientes.Remove(existente);
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync(ct);
         }
 
-        public async Task<Cliente> GetByIdAsync(Guid id)
+        public async Task<Cliente> GetByIdAsync(Guid id, CancellationToken ct)
         {
             var cliente = await _context.Clientes
                 .Include(c => c.Empresas)
                     .ThenInclude(ec => ec.Empresa)
                 .Include(c => c.Relaciones)
                     .ThenInclude(r => r.Relacionado)
-                .FirstOrDefaultAsync(c => c.Id == id);
+                .FirstOrDefaultAsync(c => c.Id == id, ct);
    
             return cliente
                 ?? throw new KeyNotFoundException($"El cliente con el id {id} no se encontro");
         }
 
-        public async Task<IEnumerable<Cliente>> ListAsync(int pageNumber, int pageSize)
+        public async Task<IEnumerable<Cliente>> ListAsync(
+            int pageNumber,
+            int pageSize,
+            CancellationToken ct
+        )
         {
             var skip = (pageNumber - 1) * pageSize;
             return await _context.Clientes
                 .AsNoTracking()
                 .Skip(skip)
                 .Take(pageSize)
-                .ToListAsync();
+                .ToListAsync(ct);
         }
 
-        public async Task UpdateAsync(Cliente cliente)
+        public async Task UpdateAsync(Cliente cliente, CancellationToken ct)
         {
             try
             {
                 _context.Entry(cliente).State = EntityState.Modified;
-                await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync(ct);
             }
             catch (DbUpdateConcurrencyException ex)
             {

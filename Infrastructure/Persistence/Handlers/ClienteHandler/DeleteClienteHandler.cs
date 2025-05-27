@@ -1,9 +1,10 @@
+using MediatR;
 using ModuloClientes.Core.Ports.Commands.ClienteCommands;
 using ModuloClientes.Core.Ports.Repositories;
 
 namespace ModuloClientes.Infrastructure.Persistence.Handlers.ClienteHandler
 {
-    public class DeleteClienteHandler : IDeleteClienteCommandHandler
+    public class DeleteClienteHandler : IRequestHandler<DeleteClienteCommand>
     {
         private readonly IClienteRepository _repo;
 
@@ -12,9 +13,9 @@ namespace ModuloClientes.Infrastructure.Persistence.Handlers.ClienteHandler
             _repo = repository;
         }
 
-        public async Task HandleAsync(DeleteClienteCommand command)
+        public async Task Handle(DeleteClienteCommand command, CancellationToken ct)
         {
-            await _repo.DeleteAsync(command.Id); 
+            await _repo.DeleteAsync(command.Id, ct); 
         }
     }
 }

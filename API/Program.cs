@@ -15,6 +15,7 @@ using ModuloClientes.Infrastructure.Persistence.Repository;
 using ModuloClientes.API.DTOs.Update;
 using ModuloClientes.Core.Models;
 using ModuloClientes.API.Validations.EmpresaValidations;
+using Microsoft.VisualStudio.Web.CodeGenerators.Mvc.Templates.Blazor;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -45,25 +46,30 @@ builder.Services.AddScoped<IClienteRepository, ClienteRepository>();
 builder.Services.AddScoped<IEmpresaRepository, EmpresaRepository>();
 
 // Registra los command handlers Cliente
-builder.Services.AddScoped<ICreateClienteCommandHandler, CreateClienteHandler>();
-builder.Services.AddScoped<IUpdateClienteCommandHandler, UpdateClienteHandler>();
-builder.Services.AddScoped<IDeleteClienteCommandHandler, DeleteClienteHandler>();
-builder.Services.AddScoped<IVincularEmpresaCommandHandler, VincularEmpresaHandler>();
-builder.Services.AddScoped<IAgregarOficioCommandHandler, AgregarOficioHandler>();
-builder.Services.AddScoped<IEliminarOficioCommandHandler, EliminarOficioHandler>();
-builder.Services.AddScoped<IUpdateOficiosCommandHandler, ReemplazarOficiosHandler>();
+// builder.Services.AddScoped<ICreateClienteCommandHandler, CreateClienteHandler>();
+// builder.Services.AddScoped<IUpdateClienteCommandHandler, UpdateClienteHandler>();
+// builder.Services.AddScoped<IDeleteClienteCommandHandler, DeleteClienteHandler>();
+// builder.Services.AddScoped<IVincularEmpresaCommandHandler, VincularEmpresaHandler>();
+// builder.Services.AddScoped<IAgregarOficioCommandHandler, AgregarOficioHandler>();
+// builder.Services.AddScoped<IEliminarOficioCommandHandler, EliminarOficioHandler>();
+// builder.Services.AddScoped<IUpdateOficiosCommandHandler, ReemplazarOficiosHandler>();
 // Registra los query handlers Cliente
-builder.Services.AddScoped<IGetClienteByIdQueryHandler, GetClienteByIdHandler>();
-builder.Services.AddScoped<IListClientesQueryHandler, ListClientesHandler>();
+// builder.Services.AddScoped<IGetClienteByIdQueryHandler, GetClienteByIdHandler>();
+// builder.Services.AddScoped<IListClientesQueryHandler, ListClientesHandler>();
 
 //Registrar los commands handlers Empresa
 builder.Services.AddScoped<ICreateEmpresaCommandHandler,CreateEmpresaHandler>();
-builder.Services.AddScoped<IUpdateEmpresaCommandHandler, UpdateEmpresaHandler>();
+// builder.Services.AddScoped<IUpdateEmpresaCommandHandler, UpdateEmpresaHandler>();
 builder.Services.AddScoped<IDeleteEmpresaCommandHandler, DeleteEmpresaHandler>();
 // Registrar los query habndlers Empresa
 builder.Services.AddScoped<IGetEmpresaByIdQueryHandler, GetEmpresaByIdHandler>();
 builder.Services.AddScoped<IListEmpresasQueryHandler, ListEmpresasHandler>();
 
+// MediatR
+builder.Services.AddMediatR(cfg =>
+{
+    cfg.RegisterServicesFromAssemblyContaining<CreateClienteHandler>();
+});
 
 // Services
 
@@ -81,9 +87,11 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
+
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseResponseCaching(); // cache 
 app.MapControllers();
 
 

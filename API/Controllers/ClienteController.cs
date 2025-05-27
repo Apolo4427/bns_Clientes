@@ -1,6 +1,8 @@
 using AutoMapper;
 using FluentValidation;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.CodeAnalysis.CSharp.Syntax;
 using ModuloClientes.API.DTOs.Create;
 using ModuloClientes.API.DTOs.Response;
 using ModuloClientes.API.DTOs.Update;
@@ -15,8 +17,8 @@ namespace ModuloClientes.API.Controllers
     public class ClienteController : ControllerBase
     {
         private readonly IValidator<ClienteCreateDto> _createValidator;
-        private readonly ICreateClienteCommandHandler _createHandler;
-        private readonly IGetClienteByIdQueryHandler _getClienteById;
+        private readonly IMediator _mediator;
+        private readonly IGetClienteByIdQueryHandler _getClienteById; 
         private readonly IListClientesQueryHandler _listClientes;
         private readonly IValidator<ClienteUpdateDto> _updateValidator;
         private readonly IUpdateClienteCommandHandler _updateHandler;
@@ -29,7 +31,7 @@ namespace ModuloClientes.API.Controllers
 
         public ClienteController(
             IValidator<ClienteCreateDto> createValidator,
-            ICreateClienteCommandHandler createClienteCommandHandler,
+            IMediator mediator,
             IGetClienteByIdQueryHandler getClienteByIdQuery,
             IListClientesQueryHandler listClientesQueryHandler,
             IValidator<ClienteUpdateDto> updateValidator,
@@ -43,7 +45,7 @@ namespace ModuloClientes.API.Controllers
             )
         {
             _createValidator = createValidator;
-            _createHandler = createClienteCommandHandler;
+            _mediator = mediator;
             _getClienteById = getClienteByIdQuery;
             _listClientes = listClientesQueryHandler;
             _updateValidator = updateValidator;
@@ -61,7 +63,10 @@ namespace ModuloClientes.API.Controllers
         /// </summary>
         [HttpPost("CreateNewCliente")]
         [ProducesResponseType(typeof(ActionResult), StatusCodes.Status201Created)]
-        public async Task<ActionResult> Add([FromBody] ClienteCreateDto createDto)
+        public async Task<ActionResult> Add(
+            [FromBody] ClienteCreateDto createDto,
+            CancellationToken cancellationToken
+        )
         {
             var validationResult = await _createValidator.ValidateAsync(createDto);
 
@@ -70,7 +75,7 @@ namespace ModuloClientes.API.Controllers
 
             var command = _mapper.Map<CreateClienteCommand>(createDto);
 
-            Guid newId = await _createHandler.HandleAsync(command);
+            Guid newId = await _mediator.Send(command, cancellationToken);
 
             var cliente = await _getClienteById.HandleAsync(new GetClienteByIdQuery(newId));
 
@@ -84,27 +89,56 @@ namespace ModuloClientes.API.Controllers
         /// </summary>
         [HttpGet("{id:guid}")]
         [ProducesResponseType(typeof(ActionResult<ClienteResponseDto>), StatusCodes.Status200OK)]
-        public async Task<ActionResult<ClienteResponseDto>> GetById(Guid id)
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        public async Task<ActionResult<ClienteResponseDto>> GetById(
+            Guid id,
+            CancellationToken cancellationToken
+        )
         {
-            var cliente = await _getClienteById.HandleAsync(new GetClienteByIdQuery(id));
-            var dto = _mapper.Map<ClienteResponseDto>(cliente);
-            return Ok(dto);
-        } 
+            try
+            {
+                var cliente = await _mediator.Send(
+                    new GetClienteByIdQuery(id),
+                    cancellationToken
+                );
+
+                var dto = _mapper.Map<ClienteResponseDto>(cliente);
+                return Ok(dto);
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (ArgumentException ex)
+            {
+                return BadRequest(ex.Message);
+            }
+        }
 
         /// <summary>
         /// Devuelve una lista de clientes
         /// <summary>
         [HttpGet]
         [ProducesResponseType(typeof(IEnumerable<ClienteResponseDto>), StatusCodes.Status200OK)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult<IEnumerable<ClienteResponseDto>>> GetAll(
+            CancellationToken cancellationToken,
             [FromQuery] int pageNumber = 1,
             [FromQuery] int pageSize = 15
         )
         {
-            var query =  new ListClientesQuery(pageNumber, pageSize);
-            var clientes = await _listClientes.HandleAsync(query);
-            var listDto = _mapper.Map<IEnumerable<ClienteResponseDto>>(clientes);
-            return Ok(listDto);
+            try
+            {
+                var query = new ListClientesQuery(pageNumber, pageSize);
+                var clientes = await _mediator.Send(query, cancellationToken);
+                var listDto = _mapper.Map<IEnumerable<ClienteResponseDto>>(clientes);
+                return Ok(listDto);
+            }
+            catch (Exception ex)
+            {
+                return BadRequest(ex.Message);
+            }
         }
 
         /// <summary>
@@ -116,9 +150,10 @@ namespace ModuloClientes.API.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult> Update(
             Guid id,
-            [FromBody] ClienteUpdateDto updateDto)
+            [FromBody] ClienteUpdateDto updateDto,
+            CancellationToken cancellationToken
+        )
         {
-            // TODO: VALIDAR LAS VALIDACIONES 
             var validationResult = await _updateValidator.ValidateAsync(updateDto);
 
             if (!validationResult.IsValid)
@@ -129,7 +164,7 @@ namespace ModuloClientes.API.Controllers
 
             try
             {
-                await _updateHandler.HandleAsync(command);
+                await _mediator.Send(command, cancellationToken);
                 return NoContent();
             }
             catch (KeyNotFoundException)
@@ -145,11 +180,11 @@ namespace ModuloClientes.API.Controllers
         [ProducesResponseType(StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult> Delete(Guid id)
+        public async Task<ActionResult> Delete(Guid id, CancellationToken cancellationToken)
         {
             try
             {
-                await _deleteHanlder.HandleAsync(new DeleteClienteCommand(id));
+                await _mediator.Send(new DeleteClienteCommand(id), cancellationToken);
                 return NoContent();
             }
             catch (KeyNotFoundException)
@@ -172,7 +207,8 @@ namespace ModuloClientes.API.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<IEnumerable<string>>> AgregarOficio(
             Guid clienteId,
-            [FromBody] string oficio
+            [FromBody] string oficio,
+            CancellationToken cancellationToken
         )
         {
             if (string.IsNullOrWhiteSpace(oficio))
@@ -180,7 +216,7 @@ namespace ModuloClientes.API.Controllers
 
             try
             {
-                var oficios = await _agregarOficioHandler.HandleAsync(new AgregarOficioCommand(clienteId, oficio));
+                var oficios = await _mediator.Send(new AgregarOficioCommand(clienteId, oficio), cancellationToken);
                 return Ok(oficios);
             }
             catch (KeyNotFoundException)
@@ -204,7 +240,8 @@ namespace ModuloClientes.API.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<IEnumerable<string>>> EliminarOficio(
             Guid clienteId,
-            [FromBody] string oficio
+            [FromBody] string oficio,
+            CancellationToken cancellationToken
         )
         {
             if (string.IsNullOrWhiteSpace(oficio))
@@ -212,7 +249,7 @@ namespace ModuloClientes.API.Controllers
 
             try
             {
-                var oficios = await _eliminarOficioHandler.HandleAsync(new EliminarOficioCommand(clienteId, oficio));
+                var oficios = await _mediator.Send(new EliminarOficioCommand(clienteId, oficio), cancellationToken);
                 return Ok(oficios);
             }
             catch (KeyNotFoundException)
@@ -235,7 +272,8 @@ namespace ModuloClientes.API.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult<IEnumerable<string>>> ReemplazarOficios(
             Guid clienteId,
-            [FromBody] IEnumerable<string> oficiosNuevos
+            [FromBody] IEnumerable<string> oficiosNuevos,
+            CancellationToken cancellationToken
         )
         {
             foreach (var oficio in oficiosNuevos)
@@ -245,7 +283,7 @@ namespace ModuloClientes.API.Controllers
             }
             try
             {
-                var oficios = await _reemplazarOficios.HandleAsync(new UpdateOficiosCommand(clienteId, oficiosNuevos));
+                var oficios = await _mediator.Send(new UpdateOficiosCommand(clienteId, oficiosNuevos), cancellationToken);
                 return Ok(oficios);
             }
             catch (KeyNotFoundException)
@@ -267,7 +305,9 @@ namespace ModuloClientes.API.Controllers
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         public async Task<ActionResult> VinvularEmpresa(
             Guid clienteId,
-            [FromBody] EmpresaClienteCreateDto dto)
+            [FromBody] EmpresaClienteCreateDto dto,
+            CancellationToken cancellationToken
+        )
         {
             var command = _mapper.Map<VincularEmpresaCommand>(dto)
                             with
@@ -275,7 +315,8 @@ namespace ModuloClientes.API.Controllers
 
             try
             {
-                await _vincularHandler.HandleAsync(command);
+                await _mediator.Send(command, cancellationToken);
+                return NoContent();
             }
             catch (KeyNotFoundException)
             {
@@ -285,8 +326,6 @@ namespace ModuloClientes.API.Controllers
             {
                 return BadRequest(ex.Message);
             }
-
-            return NoContent();
         }
     }
 

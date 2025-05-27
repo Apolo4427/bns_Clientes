@@ -1,10 +1,11 @@
+using MediatR;
 using ModuloClientes.Core.Models.ValueObjects.ClienteValueObjects;
 using ModuloClientes.Core.Ports.Commands.ClienteCommands;
 using ModuloClientes.Core.Ports.Repositories;
 
 namespace ModuloClientes.Infrastructure.Persistence.Handlers.ClienteHandler
 {
-    public class AgregarOficioHandler : IAgregarOficioCommandHandler
+    public class AgregarOficioHandler : IRequestHandler<AgregarOficioCommand, IEnumerable<string>>
     {
         private readonly IClienteRepository _repo;
 
@@ -13,15 +14,16 @@ namespace ModuloClientes.Infrastructure.Persistence.Handlers.ClienteHandler
             _repo = clienteRepository;
         }
 
-        public async Task<IEnumerable<string>> HandleAsync(AgregarOficioCommand command)
+        public async Task<IEnumerable<string>> Handle(AgregarOficioCommand command, CancellationToken ct)
         {
-            var cliente = await _repo.GetByIdAsync(command.ClienteId);
+            var cliente = await _repo.GetByIdAsync(command.ClienteId, ct)
+                ?? throw new KeyNotFoundException($"No se ha encontrado un cliente con el a Id: {command.ClienteId}");
 
             var nuevoOficio = new Oficio(command.Oficio);
 
             cliente.AgregarOficio(nuevoOficio);
 
-            await _repo.UpdateAsync(cliente);
+            await _repo.UpdateAsync(cliente, ct);
 
             var response = new List<string>();
 

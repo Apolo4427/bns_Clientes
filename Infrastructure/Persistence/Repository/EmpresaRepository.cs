@@ -42,19 +42,22 @@ namespace ModuloClientes.Infrastructure.Persistence.Repository
                 );
         }
 
-        public async Task<IEnumerable<Empresa>> ListAsync()
+        public async Task<IEnumerable<Empresa>> ListAsync(int pageNumber, int pageSize)
         {
+            var skip = (pageNumber - 1) * pageSize;
             return await _context.Empresas
                 .AsNoTracking()
+                .Skip(skip)
+                .Take(pageSize)
                 .ToListAsync();
         }
 
-        public async Task UpdateAsync(Empresa empresa)
+        public async Task UpdateAsync(Empresa empresa, CancellationToken ct)
         {
             try
             {
                 _context.Entry(empresa).State = EntityState.Modified;
-                await _context.SaveChangesAsync();
+                await _context.SaveChangesAsync(ct);
             }
             catch (DbUpdateConcurrencyException ex)
             {

@@ -1,3 +1,4 @@
+using MediatR;
 using ModuloClientes.Core.Enums;
 
 namespace ModuloClientes.Core.Ports.Commands.ClienteCommands
@@ -18,5 +19,5 @@ namespace ModuloClientes.Core.Ports.Commands.ClienteCommands
         TaxStatus? EstadoTributario = null,
         string? SocialSecurityNumber = null,
         string? Direccion = null  
-    );
+    ):IRequest;
 }

@@ -7,10 +7,10 @@ namespace ModuloClientes.Core.Ports.Repositories
     /// </summary>
     public interface IClienteRepository
     {
-        Task<Cliente> GetByIdAsync(Guid id);
-        Task<IEnumerable<Cliente>> ListAsync(int pageNumber, int pageSize);
-        Task AddAsync(Cliente cliente);
-        Task UpdateAsync(Cliente cliente);
-        Task DeleteAsync(Guid id);
+        Task<Cliente> GetByIdAsync(Guid id, CancellationToken ct);
+        Task<IEnumerable<Cliente>> ListAsync(int pageNumber, int pageSize, CancellationToken ct);
+        Task AddAsync(Cliente cliente, CancellationToken ct);
+        Task UpdateAsync(Cliente cliente, CancellationToken ct);
+        Task DeleteAsync(Guid id, CancellationToken ct);
     }
 }

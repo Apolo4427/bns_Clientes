@@ -1,3 +1,5 @@
+using MediatR;
+
 namespace ModuloClientes.Core.Ports.Commands.ClienteCommands
 {
     public record VincularEmpresaCommand(
@@ -5,5 +7,5 @@ namespace ModuloClientes.Core.Ports.Commands.ClienteCommands
         Guid EmpresaId,
         string Rol,
         DateTime FechaVinculacion
-    );
+    ): IRequest;
 }

@@ -15,7 +15,7 @@ namespace ModuloClientes.Infrastructure.Persistence.Handlers.EmpresaHandler
             _repo = repository;
             _mapper = mapper;
         }
-        public async Task<int> HandleAsync(CreateEmpresaCommand command)
+        public async Task<Guid> HandleAsync(CreateEmpresaCommand command)
         {
             var empresa = _mapper.Map<Empresa>(command);
             await _repo.AddAsync(empresa);

@@ -1,9 +1,10 @@
+using MediatR;
 using ModuloClientes.Core.Ports.Commands.ClienteCommands;
 using ModuloClientes.Core.Ports.Repositories;
 
 namespace ModuloClientes.Infrastructure.Persistence.Handlers.ClienteHandler
 {
-    public class DesvincularEmpresaHandler : IDesvincularEmpresaCommandHandler
+    public class DesvincularEmpresaHandler : IRequestHandler<DesvincularEmpresaCommand>
     {
         private readonly IClienteRepository _clienteRepo;
 
@@ -11,14 +12,14 @@ namespace ModuloClientes.Infrastructure.Persistence.Handlers.ClienteHandler
         {
             _clienteRepo = clienteRepo;
         }
-        public async Task HandleAsync(DesvincularEmpresaCommand command)
+        public async Task Handle(DesvincularEmpresaCommand command, CancellationToken ct)
         {
             
-            var cliente = await _clienteRepo.GetByIdAsync(command.ClienteId);
+            var cliente = await _clienteRepo.GetByIdAsync(command.ClienteId, ct);
 
             cliente.DesvincularEmpresa(command.EmpresaId);
 
-            await _clienteRepo.UpdateAsync(cliente);
+            await _clienteRepo.UpdateAsync(cliente, ct);
         }
     }
 }

@@ -1,10 +1,11 @@
+using MediatR;
 using ModuloClientes.Core.Models.ValueObjects.ClienteValueObjects;
 using ModuloClientes.Core.Ports.Commands.ClienteCommands;
 using ModuloClientes.Core.Ports.Repositories;
 
 namespace ModuloClientes.Infrastructure.Persistence.Handlers.ClienteHandler
 {
-    public class ReemplazarOficiosHandler : IUpdateOficiosCommandHandler
+    public class ReemplazarOficiosHandler : IRequestHandler<UpdateOficiosCommand, IEnumerable<string>>
     {
         private readonly IClienteRepository _repo;
 
@@ -12,16 +13,17 @@ namespace ModuloClientes.Infrastructure.Persistence.Handlers.ClienteHandler
         {
             _repo = clienteRepository;
         }
-        public async Task<IEnumerable<string>> HandleAsync(UpdateOficiosCommand command)
+        public async Task<IEnumerable<string>> Handle(UpdateOficiosCommand command, CancellationToken ct)
         {
-            var cliente = await _repo.GetByIdAsync(command.ClienteId);
+            var cliente = await _repo.GetByIdAsync(command.ClienteId, ct)
+                ?? throw new KeyNotFoundException($"El cliente con el id: {command.ClienteId} no se ha encontrado");
 
             var nuevosOficios = command.Oficios
                 .Select(o => new Oficio(o))
                 .ToList();
 
             cliente.ReemplazarOficios(nuevosOficios);
-            await _repo.UpdateAsync(cliente);
+            await _repo.UpdateAsync(cliente, ct);
 
             return nuevosOficios.Select(o => o.ToString());
         }

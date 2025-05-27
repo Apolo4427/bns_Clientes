@@ -278,3 +278,6 @@ C:\Users\sergi\Documents\BNS Taxes\ERP\Nuestro ERP\ERPBNS\Modulo de Clientes\Mod
 C:\Users\sergi\Documents\BNS Taxes\ERP\Nuestro ERP\ERPBNS\Modulo de Clientes\ModuloClientes\obj\Debug\net9.0\ModuloClientes.genruntimeconfig.cache
 C:\Users\sergi\Documents\BNS Taxes\ERP\Nuestro ERP\ERPBNS\Modulo de Clientes\ModuloClientes\obj\Debug\net9.0\ref\ModuloClientes.dll
 C:\Users\sergi\Documents\BNS Taxes\ERP\Nuestro ERP\ERPBNS\Modulo de Clientes\ModuloClientes\obj\Debug\net9.0\ModuloClientes.sourcelink.json
+C:\Users\sergi\Documents\BNS Taxes\ERP\Nuestro ERP\ERPBNS\Modulo de Clientes\ModuloClientes\bin\Debug\net9.0\MediatR.dll
+C:\Users\sergi\Documents\BNS Taxes\ERP\Nuestro ERP\ERPBNS\Modulo de Clientes\ModuloClientes\bin\Debug\net9.0\MediatR.Contracts.dll
+C:\Users\sergi\Documents\BNS Taxes\ERP\Nuestro ERP\ERPBNS\Modulo de Clientes\ModuloClientes\bin\Debug\net9.0\MediatR.Extensions.Microsoft.DependencyInjection.dll

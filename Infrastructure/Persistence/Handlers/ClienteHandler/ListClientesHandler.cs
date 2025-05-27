@@ -1,10 +1,11 @@
+using MediatR;
 using ModuloClientes.Core.Models;
 using ModuloClientes.Core.Ports.Queries.ClienteQueries;
 using ModuloClientes.Core.Ports.Repositories;
 
 namespace ModuloClientes.Infrastructure.Persistence.Handlers.ClienteHandler
 {
-    public class ListClientesHandler : IListClientesQueryHandler
+    public class ListClientesHandler : IRequestHandler<ListClientesQuery, IEnumerable<Cliente>>
     {
 
         private readonly IClienteRepository _repo;
@@ -14,10 +15,10 @@ namespace ModuloClientes.Infrastructure.Persistence.Handlers.ClienteHandler
             _repo = repository;
         }
 
-        public async Task<IEnumerable<Cliente>> HandleAsync(ListClientesQuery query)
+        public async Task<IEnumerable<Cliente>> Handle(ListClientesQuery query, CancellationToken ct)
         {
             
-            return await _repo.ListAsync(query.PageNumber, query.PageSize);
+            return await _repo.ListAsync(query.PageNumber, query.PageSize, ct);
         }
     }
 }

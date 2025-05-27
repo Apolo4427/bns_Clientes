@@ -1,4 +1,5 @@
 using System.Data;
+using MediatR;
 using ModuloClientes.Core.Models.ValueObjects.ClienteValueObjects;
 using ModuloClientes.Core.Models.ValueObjects.EmpresaValueObjects;
 using ModuloClientes.Core.Ports.Commands.EmpresaCommands;
@@ -6,7 +7,7 @@ using ModuloClientes.Core.Ports.Repositories;
 
 namespace ModuloClientes.Infrastructure.Persistence.Handlers.EmpresaHandler
 {
-    public class UpdateEmpresaHandler : IUpdateEmpresaCommandHandler
+    public class UpdateEmpresaHandler : IRequestHandler<UpdateEmpresaCommand>
     {
 
         private readonly IEmpresaRepository _repository;
@@ -15,7 +16,7 @@ namespace ModuloClientes.Infrastructure.Persistence.Handlers.EmpresaHandler
         {
             _repository = repository;
         }
-        public async Task HandleAsync(UpdateEmpresaCommand command)
+        public async Task Handle(UpdateEmpresaCommand command, CancellationToken ct)
         {
             var empresa = await _repository.GetByIdAsync(command.Id)
                 ?? throw new ArgumentException($"La empresa con Id: {command.Id} no se ha encontrado");
@@ -36,7 +37,7 @@ namespace ModuloClientes.Infrastructure.Persistence.Handlers.EmpresaHandler
             if (command.FechaConstitucion.HasValue)
                 empresa.CambiarFechaConstitucion(command.FechaConstitucion.Value);
             
-            await _repository.UpdateAsync(empresa);
+            await _repository.UpdateAsync(empresa, ct);
         }
     }
 }

@@ -1,3 +1,5 @@
+using MediatR;
+
 namespace ModuloClientes.Core.Ports.Commands.EmpresaCommands
 {
     public record UpdateEmpresaCommand(
@@ -9,5 +11,5 @@ namespace ModuloClientes.Core.Ports.Commands.EmpresaCommands
         string? Telefono = null,
         string? CorreoContacto = null,
         DateTime? FechaConstitucion = null
-    );
+    ):IRequest;
 }
