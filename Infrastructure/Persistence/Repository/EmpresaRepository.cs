@@ -14,27 +14,27 @@ namespace ModuloClientes.Infrastructure.Persistence.Repository
         {
             _context = context;
         }
-        public async Task AddAsync(Empresa empresa)
+        public async Task AddAsync(Empresa empresa, CancellationToken ct)
         {
             _context.Empresas.Add(empresa);
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync(ct);
         }
 
-        public async Task DeleteAsync(Guid id)
+        public async Task DeleteAsync(Guid id, CancellationToken ct)
         {
-            var existe = await _context.Empresas.FindAsync(id)
+            var existe = await _context.Empresas.FindAsync(id, ct)
                 ?? throw new KeyNotFoundException($"La empresa con id {id} no se encuentra");
             _context.Empresas.Remove(existe);
-            await _context.SaveChangesAsync();
+            await _context.SaveChangesAsync(ct);
 
         }
 
-        public async Task<Empresa> GetByIdAsync(Guid id)
+        public async Task<Empresa> GetByIdAsync(Guid id, CancellationToken ct)
         {
             var empresa = await _context.Empresas
                 .Include(e => e.Clientes)
                     .ThenInclude(ec => ec.Cliente)
-                .FirstOrDefaultAsync(e => e.Id == id);
+                .FirstOrDefaultAsync(e => e.Id == id, ct);
 
             return empresa 
                 ?? throw new KeyNotFoundException(
@@ -42,14 +42,14 @@ namespace ModuloClientes.Infrastructure.Persistence.Repository
                 );
         }
 
-        public async Task<IEnumerable<Empresa>> ListAsync(int pageNumber, int pageSize)
+        public async Task<IReadOnlyList<Empresa>> ListAsync(int pageNumber, int pageSize, CancellationToken ct)
         {
             var skip = (pageNumber - 1) * pageSize;
             return await _context.Empresas
                 .AsNoTracking()
                 .Skip(skip)
                 .Take(pageSize)
-                .ToListAsync();
+                .ToListAsync(ct);
         }
 
         public async Task UpdateAsync(Empresa empresa, CancellationToken ct)

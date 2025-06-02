@@ -2,11 +2,10 @@ using AutoMapper;
 using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.CodeAnalysis.CSharp.Syntax;
 using ModuloClientes.API.DTOs.Create;
 using ModuloClientes.API.DTOs.Response;
 using ModuloClientes.API.DTOs.Update;
-using ModuloClientes.Core.Ports.Commands.ClienteCommands;
+using ModuloClientes.Aplication.Command.ClienteCommands;
 using ModuloClientes.Core.Ports.Queries.ClienteQueries;
 //TODO: implementar cancelations tokens
 
@@ -18,43 +17,19 @@ namespace ModuloClientes.API.Controllers
     {
         private readonly IValidator<ClienteCreateDto> _createValidator;
         private readonly IMediator _mediator;
-        private readonly IGetClienteByIdQueryHandler _getClienteById; 
-        private readonly IListClientesQueryHandler _listClientes;
         private readonly IValidator<ClienteUpdateDto> _updateValidator;
-        private readonly IUpdateClienteCommandHandler _updateHandler;
-        private readonly IDeleteClienteCommandHandler _deleteHanlder;
-        private readonly IAgregarOficioCommandHandler _agregarOficioHandler;
-        private readonly IEliminarOficioCommandHandler _eliminarOficioHandler;
-        private readonly IUpdateOficiosCommandHandler _reemplazarOficios;
-        private readonly IVincularEmpresaCommandHandler _vincularHandler;
         private readonly IMapper _mapper;
 
         public ClienteController(
             IValidator<ClienteCreateDto> createValidator,
             IMediator mediator,
-            IGetClienteByIdQueryHandler getClienteByIdQuery,
-            IListClientesQueryHandler listClientesQueryHandler,
             IValidator<ClienteUpdateDto> updateValidator,
-            IUpdateClienteCommandHandler updateHandler,
-            IDeleteClienteCommandHandler deleteClienteHandler,
-            IAgregarOficioCommandHandler agregarOficioHandler,
-            IEliminarOficioCommandHandler eliminarOficiohandler,
-            IUpdateOficiosCommandHandler updateOficiosHandler,
-            IVincularEmpresaCommandHandler vincular,
             IMapper mapper
             )
         {
             _createValidator = createValidator;
             _mediator = mediator;
-            _getClienteById = getClienteByIdQuery;
-            _listClientes = listClientesQueryHandler;
             _updateValidator = updateValidator;
-            _updateHandler = updateHandler;
-            _deleteHanlder = deleteClienteHandler;
-            _agregarOficioHandler = agregarOficioHandler;
-            _eliminarOficioHandler = eliminarOficiohandler;
-            _reemplazarOficios = updateOficiosHandler;
-            _vincularHandler = vincular;
             _mapper = mapper;
         }
 
@@ -77,7 +52,7 @@ namespace ModuloClientes.API.Controllers
 
             Guid newId = await _mediator.Send(command, cancellationToken);
 
-            var cliente = await _getClienteById.HandleAsync(new GetClienteByIdQuery(newId));
+            var cliente = await _mediator.Send(new GetClienteByIdQuery(newId), cancellationToken);
 
             var responseDto = _mapper.Map<ClienteResponseDto>(cliente);
 

@@ -1,6 +1,7 @@
 using System.Data;
 using AutoMapper;
 using FluentValidation;
+using MediatR;
 using Microsoft.AspNetCore.Mvc;
 using ModuloClientes.API.DTOs.Create;
 using ModuloClientes.API.DTOs.Response;
@@ -17,31 +18,19 @@ namespace ModuloClientes.API.Controllers
     {
         private readonly IValidator<EmpresaCreateDto> _createValidator;
         private readonly IValidator<EmpresaUpdateDto> _updateValidator;
-        private readonly ICreateEmpresaCommandHandler _createEmpresaHandler;
-        private readonly IUpdateEmpresaCommandHandler _updateHandler;
-        private readonly IDeleteEmpresaCommandHandler _deleteHandler;
-        private readonly IGetEmpresaByIdQueryHandler _getEmpresaByIdHandler;
-        private readonly IListEmpresasQueryHandler _listEmprsaHandler;
+        private readonly IMediator _mediator;
         private readonly IMapper _mapper;
 
         public EmpresaController(
             IValidator<EmpresaCreateDto> createValidator,
             IValidator<EmpresaUpdateDto> updateValidator,
-            ICreateEmpresaCommandHandler createEmpresa,
-            IUpdateEmpresaCommandHandler updateHandler,
-            IDeleteEmpresaCommandHandler deleteHandler,
-            IGetEmpresaByIdQueryHandler getEmpresa,
-            IListEmpresasQueryHandler listEmpresasQuery,
+            IMediator mediator,
             IMapper mapper
         )
         {
             _createValidator = createValidator;
             _updateValidator = updateValidator;
-            _createEmpresaHandler = createEmpresa;
-            _updateHandler = updateHandler;
-            _deleteHandler = deleteHandler;
-            _getEmpresaByIdHandler = getEmpresa;
-            _listEmprsaHandler = listEmpresasQuery;
+            _mediator = mediator;
             _mapper = mapper;
         }
 
@@ -49,7 +38,10 @@ namespace ModuloClientes.API.Controllers
         /// Crea una nueva empresa
         /// <summary>
         [HttpPost("createNewEmpresa")]
-        public async Task<ActionResult> Add([FromBody] EmpresaCreateDto dto)
+        public async Task<ActionResult> Add(
+            [FromBody] EmpresaCreateDto dto,
+            CancellationToken cancellationToken
+        )
         {
             var validationResult = await _createValidator.ValidateAsync(dto);
 
@@ -58,9 +50,9 @@ namespace ModuloClientes.API.Controllers
 
             var command = _mapper.Map<CreateEmpresaCommand>(dto);
 
-            Guid newId = await _createEmpresaHandler.HandleAsync(command);
+            Guid newId = await _mediator.Send(command, cancellationToken);
 
-            var empresa = await _getEmpresaByIdHandler.HandleAsync(new GetEmpresaByIdQuery(newId));
+            var empresa = await _mediator.Send(new GetEmpresaByIdQuery(newId), cancellationToken);
 
             var responseDto = _mapper.Map<EmpresaResponseDto>(empresa);
 
@@ -71,9 +63,12 @@ namespace ModuloClientes.API.Controllers
         /// obtiene una empresa por su id
         /// <summary>
         [HttpGet("{id:guid}")]
-        public async Task<ActionResult<EmpresaResponseDto>> GetById(Guid id)
+        public async Task<ActionResult<EmpresaResponseDto>> GetById(
+            Guid id,
+            CancellationToken cancellationToken
+        )
         {
-            var empresa = await _getEmpresaByIdHandler.HandleAsync(new GetEmpresaByIdQuery(id));
+            var empresa = await _mediator.Send(new GetEmpresaByIdQuery(id), cancellationToken);
 
             var dto = _mapper.Map<EmpresaResponseDto>(empresa);
 
@@ -90,11 +85,12 @@ namespace ModuloClientes.API.Controllers
         )]
         public async Task<ActionResult<IEnumerable<EmpresaResponseDto>>> GetAll(
             [FromQuery] int pageNumber,
-            [FromQuery] int pageSize
+            [FromQuery] int pageSize,
+            CancellationToken cancellationToken
         )
         {
             var query = new ListEmpresasQuery(pageNumber, pageSize);
-            var empresas = await _listEmprsaHandler.HandleAsync(query);
+            var empresas = await _mediator.Send(query, cancellationToken);
             var listDto = _mapper.Map<IEnumerable<EmpresaResponseDto>>(empresas);
 
             return Ok(listDto);
@@ -107,7 +103,8 @@ namespace ModuloClientes.API.Controllers
         [ProducesResponseType(StatusCodes.Status404NotFound)]
         public async Task<ActionResult> Update(
             Guid id,
-            [FromBody] EmpresaUpdateDto updateDto
+            [FromBody] EmpresaUpdateDto updateDto,
+            CancellationToken cancellationToken
         )
         {
             var result = await _updateValidator.ValidateAsync(updateDto);
@@ -120,7 +117,7 @@ namespace ModuloClientes.API.Controllers
 
             try
             {
-                await _updateHandler.HandleAsync(command);
+                await _mediator.Send(command, cancellationToken);
                 return NoContent();
             }
             catch (KeyNotFoundException)
@@ -138,11 +135,14 @@ namespace ModuloClientes.API.Controllers
             StatusCodes.Status204NoContent)]
         [ProducesResponseType(StatusCodes.Status400BadRequest)]
         [ProducesResponseType(StatusCodes.Status404NotFound)]
-        public async Task<ActionResult> Delete(Guid id)
+        public async Task<ActionResult> Delete(
+            Guid id,
+            CancellationToken cancellationToken
+        )
         {
             try
             {
-                await _deleteHandler.HandleAsync(new DeleteEmpresaCommand(id));
+                await _mediator.Send(new DeleteEmpresaCommand(id), cancellationToken);
                 return NoContent();
             }
             catch (KeyNotFoundException)
