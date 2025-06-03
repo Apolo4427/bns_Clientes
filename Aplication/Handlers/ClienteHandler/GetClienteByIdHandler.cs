@@ -1,9 +1,9 @@
 using MediatR;
 using ModuloClientes.Core.Models;
 using ModuloClientes.Core.Ports.Queries.ClienteQueries;
-using ModuloClientes.Core.Ports.Repositories;
+using ModuloClientes.Core.Ports.IRepositories;
 
-namespace ModuloClientes.Infrastructure.Persistence.Handlers.ClienteHandler
+namespace ModuloClientes.Aplication.Handlers.ClienteHandler
 {
     public class GetClienteByIdHandler : IRequestHandler<GetClienteByIdQuery, Cliente>
     {

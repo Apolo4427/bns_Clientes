@@ -1,7 +1,7 @@
 using System.Data;
 using Microsoft.EntityFrameworkCore;
 using ModuloClientes.Core.Models;
-using ModuloClientes.Core.Ports.Repositories;
+using ModuloClientes.Core.Ports.IRepositories;
 using ModuloClientes.Infrastructure.Data;
 
 namespace ModuloClientes.Infrastructure.Persistence.Repository
@@ -25,8 +25,8 @@ namespace ModuloClientes.Infrastructure.Persistence.Repository
         public async Task DeleteAsync(Guid id, CancellationToken ct)
         {
             var existente = await _context.Clientes.FindAsync(
-                new[] {id},
-                ct
+                keyValues: new object[] {id},
+                cancellationToken: ct
             )
                 ?? throw new KeyNotFoundException($"El cliente con el id {id} no existe");
             _context.Clientes.Remove(existente);
@@ -36,6 +36,7 @@ namespace ModuloClientes.Infrastructure.Persistence.Repository
         public async Task<Cliente> GetByIdAsync(Guid id, CancellationToken ct)
         {
             var cliente = await _context.Clientes
+                .AsNoTracking()
                 .Include(c => c.Empresas)
                     .ThenInclude(ec => ec.Empresa)
                 .Include(c => c.Relaciones)
@@ -46,7 +47,7 @@ namespace ModuloClientes.Infrastructure.Persistence.Repository
                 ?? throw new KeyNotFoundException($"El cliente con el id {id} no se encontro");
         }
 
-        public async Task<IEnumerable<Cliente>> ListAsync(
+        public async Task<IReadOnlyList<Cliente>> ListAsync(
             int pageNumber,
             int pageSize,
             CancellationToken ct
@@ -73,14 +74,13 @@ namespace ModuloClientes.Infrastructure.Persistence.Repository
                 var dataBaseValues = await entry.GetDatabaseValuesAsync();
 
                 if (dataBaseValues == null)
-                    throw new DBConcurrencyException(
+                    throw new DbUpdateConcurrencyException(
                         "El cliente ha sido eliminado por otro usuario. Por favor cree un nuevo cliente",
                         ex
                     );
 
                 var currentValues = entry.CurrentValues;
                 var originalValues = entry.OriginalValues;
-                var databaseEntity = (Cliente)dataBaseValues.ToObject();
 
                 var changedProperties = new List<string>();
                 foreach (var propertie in entry.OriginalValues.Properties)
@@ -92,7 +92,7 @@ namespace ModuloClientes.Infrastructure.Persistence.Repository
                         changedProperties.Add(propertie.Name);
                 }
 
-                throw new DBConcurrencyException(
+                throw new DbUpdateConcurrencyException(
                     $"El cliente fue modificado por otro usuario. " +
                     $"Campos cambiados: {string.Join(", ", changedProperties)}. " +
                     "Por favor actualice la página y vuelva a intentar.",

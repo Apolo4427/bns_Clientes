@@ -1,7 +1,7 @@
 using System.Data;
 using Microsoft.EntityFrameworkCore;
 using ModuloClientes.Core.Models;
-using ModuloClientes.Core.Ports.Repositories;
+using ModuloClientes.Core.Ports.IRepositories;
 using ModuloClientes.Infrastructure.Data;
 
 namespace ModuloClientes.Infrastructure.Persistence.Repository
@@ -16,13 +16,16 @@ namespace ModuloClientes.Infrastructure.Persistence.Repository
         }
         public async Task AddAsync(Empresa empresa, CancellationToken ct)
         {
-            _context.Empresas.Add(empresa);
+            await _context.Empresas.AddAsync(empresa, ct);
             await _context.SaveChangesAsync(ct);
         }
 
         public async Task DeleteAsync(Guid id, CancellationToken ct)
         {
-            var existe = await _context.Empresas.FindAsync(id, ct)
+            var existe = await _context.Empresas.FindAsync(
+                keyValues: new object[] {id},
+                cancellationToken: ct
+            )
                 ?? throw new KeyNotFoundException($"La empresa con id {id} no se encuentra");
             _context.Empresas.Remove(existe);
             await _context.SaveChangesAsync(ct);
@@ -32,6 +35,7 @@ namespace ModuloClientes.Infrastructure.Persistence.Repository
         public async Task<Empresa> GetByIdAsync(Guid id, CancellationToken ct)
         {
             var empresa = await _context.Empresas
+                .AsNoTracking()
                 .Include(e => e.Clientes)
                     .ThenInclude(ec => ec.Cliente)
                 .FirstOrDefaultAsync(e => e.Id == id, ct);
@@ -72,7 +76,6 @@ namespace ModuloClientes.Infrastructure.Persistence.Repository
 
                 var currentValues = entry.CurrentValues;
                 var originalValues = entry.OriginalValues;
-                var databaseEntity = (Empresa)dataBaseValues.ToObject(); // obtenemos el objeto y lo casteamos a empresa
 
                 var changedProperties = new List<string>();
                 foreach (var propertie in entry.OriginalValues.Properties)
@@ -84,8 +87,8 @@ namespace ModuloClientes.Infrastructure.Persistence.Repository
                         changedProperties.Add(propertie.Name);
                 }
 
-                throw new DBConcurrencyException(
-                    $"El cliente fue modificado por otro usuario. " +
+                throw new DbUpdateConcurrencyException(
+                    $"La empresa fue modificada por otro usuario. " +
                     $"Campos cambiados: {string.Join(", ", changedProperties)}. " +
                     "Por favor actualice la página y vuelva a intentar.",
                     ex
@@ -93,7 +96,7 @@ namespace ModuloClientes.Infrastructure.Persistence.Repository
             }
             catch (Exception ex)
             {
-                throw new DataException("Error al guardar los cambios del cliente.", ex);
+                throw new DataException("Error al guardar los cambios de la empresa.", ex);
             }
         }
     }

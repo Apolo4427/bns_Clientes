@@ -3,9 +3,9 @@ using Microsoft.EntityFrameworkCore;
 using ModuloClientes.API.AutoMapper;
 using ModuloClientes.API.DTOs.Create;
 using ModuloClientes.API.Validations.ClienteValidations;
-using ModuloClientes.Core.Ports.Repositories;
+using ModuloClientes.Core.Ports.IRepositories;
 using ModuloClientes.Infrastructure.Data;
-using ModuloClientes.Infrastructure.Persistence.Handlers.ClienteHandler;
+using ModuloClientes.Aplication.Handlers.ClienteHandler;
 using ModuloClientes.Infrastructure.Persistence.Repository;
 using ModuloClientes.API.DTOs.Update;
 using ModuloClientes.API.Validations.EmpresaValidations;
@@ -35,6 +35,7 @@ builder.Services.AddScoped<IValidator<EmpresaUpdateDto>, EmpresaUpdateValidation
 // Repositorios 
 builder.Services.AddScoped<IClienteRepository, ClienteRepository>();
 builder.Services.AddScoped<IEmpresaRepository, EmpresaRepository>();
+builder.Services.AddScoped<ISeguroSaludRepository, SeguroSaludRepository>();
 
 // Registra los command handlers Cliente
 // builder.Services.AddScoped<ICreateClienteCommandHandler, CreateClienteHandler>();

@@ -1,10 +1,10 @@
 using AutoMapper;
-using ModuloClientes.Core.Ports.Repositories;
+using ModuloClientes.Core.Ports.IRepositories;
 using ModuloClientes.Core.Models;
 using MediatR;
 using ModuloClientes.Aplication.Command.ClienteCommands;
 
-namespace ModuloClientes.Infrastructure.Persistence.Handlers.ClienteHandler
+namespace ModuloClientes.Aplication.Handlers.ClienteHandler
 {
     public class CreateClienteHandler : IRequestHandler<CreateClienteCommand, Guid>
     {

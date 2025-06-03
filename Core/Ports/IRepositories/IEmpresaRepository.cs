@@ -1,6 +1,6 @@
 using ModuloClientes.Core.Models;
 
-namespace ModuloClientes.Core.Ports.Repositories
+namespace ModuloClientes.Core.Ports.IRepositories
 {
     public interface IEmpresaRepository
     {

@@ -1,9 +1,9 @@
 using MediatR;
 using ModuloClientes.Aplication.Command.ClienteCommands;
 using ModuloClientes.Core.Models.ValueObjects.ClienteValueObjects;
-using ModuloClientes.Core.Ports.Repositories;
+using ModuloClientes.Core.Ports.IRepositories;
 
-namespace ModuloClientes.Infrastructure.Persistence.Handlers.ClienteHandler
+namespace ModuloClientes.Aplication.Handlers.ClienteHandler
 {
     public class ReemplazarOficiosHandler : IRequestHandler<UpdateOficiosCommand, IEnumerable<string>>
     {

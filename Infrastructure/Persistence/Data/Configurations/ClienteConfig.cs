@@ -86,11 +86,8 @@ namespace ModuloClientes.Infrastructure.Data.Configurations
       });
 
       builder.Property(c => c.RowVersion)
-        .IsRowVersion()                // marca como rowversion
-        .IsConcurrencyToken()          // marca como token de concurrencia
-        .HasColumnName("RowVersion")
-        .HasColumnType("rowversion");  // SQL Server
-
+        .IsRowVersion();               // marca como rowversion
+        
     }
   }
 }

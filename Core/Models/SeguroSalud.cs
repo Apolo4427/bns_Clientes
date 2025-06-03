@@ -19,6 +19,9 @@ namespace ModuloClientes.Core.Models
         // Monto de la prima mensual
         public decimal PrimaMensual { get; private set; }
 
+        // token de concurrencia
+        public byte[] RowVersion { get; private set; }
+
         // Clientes afiliados
         public ICollection<Cliente> Clientes { get; private set; } = new List<Cliente>();
 
