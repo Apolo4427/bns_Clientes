@@ -56,7 +56,7 @@ namespace ModuloClientes.Core.Models
             SSN socialSecurityNumber,
             Address direccion)
         {
-            Id = Guid.NewGuid();
+            // guid secuensial asignado por la base de datos sql
             Nombre = nombre ?? throw new ArgumentNullException(nameof(nombre));
             Apellido = apellido ?? throw new ArgumentNullException(nameof(apellido));
             Correo = correo ?? throw new ArgumentNullException(nameof(correo));

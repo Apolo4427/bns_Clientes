@@ -31,7 +31,7 @@ namespace ModuloClientes.Core.Models
             Email correoContacto,
             DateTime fechaConstitucion)
         {
-            Id = Guid.NewGuid();
+            // Guid generado por la base de datos SQL
             Nombre = nombre ?? throw new ArgumentNullException(nameof(nombre));
             Ein = ein ?? throw new ArgumentNullException(nameof(ein));
             Direccion = direccion ?? throw new ArgumentNullException(nameof(direccion));

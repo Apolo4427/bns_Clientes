@@ -17,7 +17,7 @@ namespace ModuloClientes.Infrastructure.Data
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
-            base.OnModelCreating(modelBuilder);
+            // base.OnModelCreating(modelBuilder); // aun no es necesario 
 
             // Aplicar configuraciones para EmpresaCliente
             modelBuilder.ApplyConfiguration(new EmpresaClienteConfig());
@@ -31,19 +31,8 @@ namespace ModuloClientes.Infrastructure.Data
             // Aplicar configuracion para Empleado
             modelBuilder.ApplyConfiguration(new EmpresaConfig());
 
-            // Relación SeguroSalud ↔ Cliente (1:N)
-            modelBuilder.Entity<Cliente>()
-                .HasOne(c => c.SeguroSalud)
-                .WithMany(s => s.Clientes)
-                .HasForeignKey(c => c.SeguroSaludId);
-
-            // Precicion del decimal en SeguroSalud
-            modelBuilder.Entity<SeguroSalud>()
-                .Property(S => S.PrimaMensual)
-                .HasPrecision(18, 2);
-                
-
-            // Configuracion para 
+            // Aplicat Configuracion para SeguroSalud
+            modelBuilder.ApplyConfiguration(new SeguroSaludConfig());
         }
     }
 }

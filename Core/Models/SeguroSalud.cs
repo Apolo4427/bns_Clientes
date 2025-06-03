@@ -34,7 +34,7 @@ namespace ModuloClientes.Core.Models
             DateTime fechaFin,
             decimal primaMensual)
         {
-            Id = Guid.NewGuid();
+            // Guid generado por la base de datos SQL
             Proveedor = proveedor ?? throw new ArgumentNullException(nameof(proveedor));
             NombrePlan = nombrePlan ?? throw new ArgumentNullException(nameof(nombrePlan));
             NumeroPoliza = numeroPoliza ?? throw new ArgumentNullException(nameof(numeroPoliza));

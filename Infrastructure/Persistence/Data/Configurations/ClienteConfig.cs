@@ -13,11 +13,13 @@ namespace ModuloClientes.Infrastructure.Data.Configurations
 
       // PK, propiedades escalares, índices, etc.
       builder.HasKey(c => c.Id);
-      // Guid
+
+      // Guid secuencial 
       builder.Property(c => c.Id)
-          .HasColumnName("Id")
-          .HasColumnType("uniqueidentifier")
-          .ValueGeneratedOnAdd();
+        .HasColumnName("Id")
+        .HasColumnType("uniqueidentifier")
+        .HasDefaultValueSql("NEWSEQUENTIALID()")
+        .ValueGeneratedOnAdd();
 
       builder.Property(c => c.FechaNacimiento).IsRequired();
 
