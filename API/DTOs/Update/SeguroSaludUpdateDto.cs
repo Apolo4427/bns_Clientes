@@ -34,5 +34,7 @@ namespace ModuloClientes.API.DTOs.Update
         /// Nueva prima mensual. Si es null, no se modifica.
         /// </summary>
         public decimal? PrimaMensual { get; set; }
+
+        public string RowVersion { get; set; } = null!;
     }
 }

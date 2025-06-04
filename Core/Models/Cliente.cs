@@ -5,7 +5,7 @@ namespace ModuloClientes.Core.Models
 {
     public class Cliente
     {
-        public Guid   Id { get; private set; } // Clave primaria
+        public Guid Id { get; private set; } // Clave primaria
 
         // Datos personales
         public Name Nombre { get; private set; }
@@ -23,7 +23,7 @@ namespace ModuloClientes.Core.Models
         // Estado dentro del sistema: Prospecto o Activo
         public EstadoCliente Estado { get; private set; }
 
-         // Relaciones con otros clientes (cónyuges, dependientes, etc.)
+        // Relaciones con otros clientes (cónyuges, dependientes, etc.)
         public ICollection<ClienteRelacion> Relaciones { get; private set; } = new List<ClienteRelacion>();
 
         // Dirección
@@ -63,7 +63,7 @@ namespace ModuloClientes.Core.Models
             Telefono = telefono ?? throw new ArgumentNullException(nameof(telefono));
             SocialSecurityNumber = socialSecurityNumber ?? throw new ArgumentNullException(nameof(socialSecurityNumber));
             Direccion = direccion ?? throw new ArgumentNullException(nameof(direccion));
-            if (fechaNacimiento == default  ||
+            if (fechaNacimiento == default ||
                 fechaNacimiento < new DateTime(1900, 1, 1) ||
                 fechaNacimiento > DateTime.Today)
                 throw new ArgumentException("La fecha de nacimiento debe estar entre 1900 y hoy", nameof(fechaNacimiento));
@@ -196,8 +196,8 @@ namespace ModuloClientes.Core.Models
         {
             if (nuevoOficio is null)
                 throw new ArgumentException("No se pueden agregar oficios vacios", nameof(nuevoOficio));
-            
-            if(Oficios.Any(o => o.EsMismoOficio(nuevoOficio)))
+
+            if (Oficios.Any(o => o.EsMismoOficio(nuevoOficio)))
                 throw new InvalidOperationException($"El oficio '{nuevoOficio}' ya existe");
 
             Oficios.Add(nuevoOficio);
@@ -211,13 +211,13 @@ namespace ModuloClientes.Core.Models
 
             var oficioExistente = Oficios.FirstOrDefault(o => o.EsMismoOficio(oficio))
                 ?? throw new KeyNotFoundException("El oficio no existe en este cliente");
-                      
+
             Oficios.Remove(oficioExistente);
         }
 
         public void ReemplazarOficios(IEnumerable<Oficio> nuevosOficios)
         {
-            if(nuevosOficios is null)
+            if (nuevosOficios is null)
                 throw new ArgumentException("No se pueden introducir oficios nulos", nameof(nuevosOficios));
             Oficios.Clear();
             foreach (var o in nuevosOficios.Distinct())
@@ -247,6 +247,12 @@ namespace ModuloClientes.Core.Models
             // Si ya tiene una póliza distinta, podríamos validar aquí o reemplazar
             SeguroSalud = seguro;
             SeguroSaludId = seguro.Id;
+        }
+
+        public void RemoverSeguroSalud()
+        {
+            SeguroSalud = null;
+            SeguroSaludId = null;
         }
 
     }

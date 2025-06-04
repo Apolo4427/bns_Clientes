@@ -31,10 +31,7 @@ namespace ModuloClientes.API.DTOs.Create
         /// Prima mensual del plan.
         /// </summary>
         public decimal PrimaMensual { get; set; }
-        
-        /// <summary>
-        /// Lista de IDs de clientes que ya existen y se vinculan a esta póliza.
-        /// </summary>
-        public IList<int> ClienteIds { get; set; } = new List<int>();
+
+        public string RowVersion { get; set; } = null!;
     }
 }

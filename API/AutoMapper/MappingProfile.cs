@@ -9,6 +9,7 @@ using ModuloClientes.Core.Models.ValueObjects.ClienteValueObjects;
 using ModuloClientes.Core.Models.ValueObjects.SeguroSaludValueObjects;
 using ModuloClientes.Core.Models.ValueObjects.EmpresaValueObjects;
 using ModuloClientes.Aplication.Command.ClienteCommands;
+using ModuloClientes.Aplication.Command.SeguroSaludCommands;
 
 namespace ModuloClientes.API.AutoMapper
 {
@@ -37,20 +38,11 @@ namespace ModuloClientes.API.AutoMapper
             CreateMap<ClienteUpdateDto, UpdateClienteCommand>()
                 .ForMember(dto => dto.RowVersion, o => o.MapFrom(src => Convert.FromBase64String(src.RowVersion)));             
             
-            CreateMap<EmpresaCreateDto, CreateEmpresaCommand>();             
-            CreateMap<EmpresaUpdateDto, UpdateEmpresaCommand>();             
+            CreateMap<EmpresaCreateDto, CreateEmpresaCommand>();
+            CreateMap<EmpresaUpdateDto, UpdateEmpresaCommand>()
+                .ForMember(dto => dto.RowVersion, o => o.MapFrom(c => Convert.FromBase64String(c.RowVersion)));
 
-            // Para SeguroSalud no existe CreateCommand, así que lo mapeamos directo a la entidad:
-            // TODO: CREAR CreateCommand de SeguroSalud
-            // CreateMap<SeguroSaludCreateDto, SeguroSalud>()
-            //     .ConstructUsing(dto => new SeguroSalud(
-            //         dto.Proveedor,
-            //         dto.NombrePlan,
-            //         dto.NumeroPoliza,
-            //         dto.FechaInicio,
-            //         dto.FechaFin,
-            //         dto.PrimaMensual
-            //     ));                                                     // :contentReference[oaicite:4]{index=4}
+            CreateMap<SeguroSaludCreateDto, CreateSeguroSaludCommand>();            
 
             //
             // 3) Commands de creación → Entidades
@@ -77,6 +69,16 @@ namespace ModuloClientes.API.AutoMapper
                     ctx.Mapper.Map<Email>(src.CorreoContacto),
                     src.FechaConstitucion
                 ));
+            
+            CreateMap<CreateSeguroSaludCommand, SeguroSalud>()
+            .ConstructUsing((src, ctx) => new SeguroSalud(
+                ctx.Mapper.Map<CompanyName>(src.Proveedor),
+                ctx.Mapper.Map<PlanName>(src.NombrePlan),
+                ctx.Mapper.Map<PolicyNumber>(src.NumeroPoliza),
+                src.FechaInicio,
+                src.FechaFin,
+                src.PrimaMensual
+            ));
 
             //
             // 4) Entidades → Response DTOs

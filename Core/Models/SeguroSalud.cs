@@ -118,6 +118,8 @@ namespace ModuloClientes.Core.Models
                 throw new ArgumentNullException(nameof(cliente));
             if (Clientes.Contains(cliente))
                 return;
+
+            cliente.AsignarSeguroSalud(this);
             Clientes.Add(cliente);
         }
 
@@ -127,6 +129,7 @@ namespace ModuloClientes.Core.Models
                 throw new ArgumentNullException(nameof(cliente));
             if (!Clientes.Contains(cliente))
                 throw new InvalidOperationException("El cliente no está afiliado a esta póliza.");
+            cliente.RemoverSeguroSalud();
             Clientes.Remove(cliente);
         }
     }
