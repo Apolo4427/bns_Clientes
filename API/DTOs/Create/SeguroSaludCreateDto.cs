@@ -31,7 +31,5 @@ namespace ModuloClientes.API.DTOs.Create
         /// Prima mensual del plan.
         /// </summary>
         public decimal PrimaMensual { get; set; }
-
-        public string RowVersion { get; set; } = null!;
     }
 }

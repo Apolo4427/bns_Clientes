@@ -25,12 +25,13 @@ namespace ModuloClientes.Infrastructure.Persistence.Repository
         public async Task DeleteAsync(Guid id, CancellationToken ct)
         {
             var existente = await _context.Clientes.FindAsync(
-                keyValues: new object[] {id},
+                keyValues: new object[] { id },
                 cancellationToken: ct
             )
                 ?? throw new KeyNotFoundException($"El cliente con el id {id} no existe");
             _context.Clientes.Remove(existente);
             await _context.SaveChangesAsync(ct);
+            
         }
 
         public async Task<Cliente> GetByIdAsync(Guid id, CancellationToken ct)

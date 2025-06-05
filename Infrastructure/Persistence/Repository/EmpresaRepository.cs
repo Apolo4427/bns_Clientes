@@ -23,13 +23,13 @@ namespace ModuloClientes.Infrastructure.Persistence.Repository
         public async Task DeleteAsync(Guid id, CancellationToken ct)
         {
             var existe = await _context.Empresas.FindAsync(
-                keyValues: new object[] {id},
+                keyValues: new object[] { id },
                 cancellationToken: ct
             )
                 ?? throw new KeyNotFoundException($"La empresa con id {id} no se encuentra");
+           
             _context.Empresas.Remove(existe);
             await _context.SaveChangesAsync(ct);
-
         }
 
         public async Task<Empresa> GetByIdAsync(Guid id, CancellationToken ct)

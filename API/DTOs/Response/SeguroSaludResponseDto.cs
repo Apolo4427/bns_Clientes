@@ -1,3 +1,5 @@
+using Microsoft.EntityFrameworkCore.Storage.ValueConversion.Internal;
+
 namespace ModuloClientes.API.DTOs.Response
 {
     public class SeguroSaludResponseDto
@@ -10,5 +12,6 @@ namespace ModuloClientes.API.DTOs.Response
         public DateTime FechaFin { get; set; }
         public decimal PrimaMensual { get; set; }
         public List<ClienteResponseDto> Clientes { get; set; } = new();
+        public string RowVersion { get; set; } = null!;
     }
 }

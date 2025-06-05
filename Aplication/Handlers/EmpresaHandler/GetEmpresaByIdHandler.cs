@@ -14,7 +14,10 @@ namespace ModuloClientes.Aplication.Handlers.EmpresaHandler
 
         public async Task<Empresa> Handle(GetEmpresaByIdQuery query, CancellationToken ct)
         {
-            return await _repository.GetByIdAsync(query.Id, ct);
+            return await _repository.GetByIdAsync(query.Id, ct)
+                ?? throw new KeyNotFoundException(
+                    $"La empresa de id {query.Id} no ha sido encontrada"
+                );
         }
     }
 }

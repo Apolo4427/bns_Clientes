@@ -71,14 +71,14 @@ namespace ModuloClientes.API.AutoMapper
                 ));
             
             CreateMap<CreateSeguroSaludCommand, SeguroSalud>()
-            .ConstructUsing((src, ctx) => new SeguroSalud(
-                ctx.Mapper.Map<CompanyName>(src.Proveedor),
-                ctx.Mapper.Map<PlanName>(src.NombrePlan),
-                ctx.Mapper.Map<PolicyNumber>(src.NumeroPoliza),
-                src.FechaInicio,
-                src.FechaFin,
-                src.PrimaMensual
-            ));
+                .ConstructUsing((src, ctx) => new SeguroSalud(
+                    ctx.Mapper.Map<CompanyName>(src.Proveedor),
+                    ctx.Mapper.Map<PlanName>(src.NombrePlan),
+                    ctx.Mapper.Map<PolicyNumber>(src.NumeroPoliza),
+                    src.FechaInicio,
+                    src.FechaFin,
+                    src.PrimaMensual
+                ));
 
             //
             // 4) Entidades → Response DTOs
@@ -103,13 +103,16 @@ namespace ModuloClientes.API.AutoMapper
                 .ForMember(d => d.Direccion,        o => o.MapFrom(src => src.Direccion.Value))
                 .ForMember(d => d.Telefono,         o => o.MapFrom(src => src.Telefono.Value))
                 .ForMember(d => d.CorreoContacto,   o => o.MapFrom(src => src.CorreoContacto.Value))
-                .ForMember(d => d.Clientes,         o => o.MapFrom(src => src.Clientes));    
+                .ForMember(d => d.Clientes,         o => o.MapFrom(src => src.Clientes))
+                .ForMember(d => d.RowVersion, o => o.MapFrom(src => Convert.ToBase64String(src.RowVersion)));
+
 
             CreateMap<SeguroSalud, SeguroSaludResponseDto>()
-                .ForMember(d => d.Proveedor,    o => o.MapFrom(src => src.Proveedor.Value))
-                .ForMember(d => d.NombrePlan,   o => o.MapFrom(src => src.NombrePlan.Value))
+                .ForMember(d => d.Proveedor, o => o.MapFrom(src => src.Proveedor.Value))
+                .ForMember(d => d.NombrePlan, o => o.MapFrom(src => src.NombrePlan.Value))
                 .ForMember(d => d.NumeroPoliza, o => o.MapFrom(src => src.NumeroPoliza.Value))
-                .ForMember(d => d.Clientes,     o => o.MapFrom(src => src.Clientes));     
+                .ForMember(d => d.Clientes, o => o.MapFrom(src => src.Clientes))
+                .ForMember(d => d.RowVersion, o => o.MapFrom(src => Convert.ToBase64String(src.RowVersion)));
 
             // Relacionados (ClienteRelacion y EmpresaCliente)
             CreateMap<EmpresaCliente, EmpresaClienteResponseDto>()

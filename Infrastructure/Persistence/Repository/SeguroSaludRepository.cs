@@ -28,17 +28,8 @@ namespace ModuloClientes.Infrastructure.Persistence.Repository
             ) ?? throw new KeyNotFoundException(
                 $"El seguro de salud con id : {id} no ha sido encontrado"
             );
-            try
-            {
-                _dbContext.SegurosSalud.Remove(seguroSalud);
-                await _dbContext.SaveChangesAsync();
-            }
-            catch (DbUpdateConcurrencyException)
-            {
-                throw new DbUpdateConcurrencyException(
-                    $"El seguro de salud con el id {id} ya ha sido eliminado por otro proceso"
-                );
-            }
+            _dbContext.SegurosSalud.Remove(seguroSalud);
+            await _dbContext.SaveChangesAsync();
 
         }
 
