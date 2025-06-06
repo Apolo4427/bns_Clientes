@@ -6,7 +6,6 @@ using Microsoft.AspNetCore.Mvc;
 using ModuloClientes.API.DTOs.Create;
 using ModuloClientes.API.DTOs.Response;
 using ModuloClientes.API.DTOs.Update;
-using ModuloClientes.Core.Models;
 using ModuloClientes.Core.Ports.Commands.EmpresaCommands;
 using ModuloClientes.Core.Ports.Queries.EmpresaQueries;
 
@@ -43,7 +42,7 @@ namespace ModuloClientes.API.Controllers
             CancellationToken cancellationToken
         )
         {
-            var validationResult = await _createValidator.ValidateAsync(dto);
+            var validationResult = await _createValidator.ValidateAsync(dto, cancellationToken);
 
             if (!validationResult.IsValid)
                 return BadRequest(validationResult.Errors);

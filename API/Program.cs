@@ -9,6 +9,7 @@ using ModuloClientes.Aplication.Handlers.ClienteHandler;
 using ModuloClientes.Infrastructure.Persistence.Repository;
 using ModuloClientes.API.DTOs.Update;
 using ModuloClientes.API.Validations.EmpresaValidations;
+using ModuloClientes.API.Validations.SeguroSaludValidation;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -27,6 +28,7 @@ builder.Services.AddAutoMapper(typeof(MappingProfile));
 // Validaciones Cliente
 builder.Services.AddScoped<IValidator<ClienteCreateDto>, ClienteCreateValidation>();
 builder.Services.AddScoped<IValidator<ClienteUpdateDto>, ClienteUpdateValidation>();
+builder.Services.AddScoped<IValidator<SeguroSaludCreateDto>, SeguroSaludCreateValidation>();
 
 // Validaciones Empresa
 builder.Services.AddScoped<IValidator<EmpresaCreateDto>, EmpresaCreateValidation>();

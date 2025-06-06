@@ -7,7 +7,7 @@ using ModuloClientes.API.DTOs.Response;
 using ModuloClientes.API.DTOs.Update;
 using ModuloClientes.Aplication.Command.ClienteCommands;
 using ModuloClientes.Core.Ports.Queries.ClienteQueries;
-//TODO: implementar cancelations tokens
+// TODO: metodos para cambiar el estado del cliente
 
 namespace ModuloClientes.API.Controllers
 {

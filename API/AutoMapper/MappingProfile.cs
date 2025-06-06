@@ -40,9 +40,11 @@ namespace ModuloClientes.API.AutoMapper
             
             CreateMap<EmpresaCreateDto, CreateEmpresaCommand>();
             CreateMap<EmpresaUpdateDto, UpdateEmpresaCommand>()
-                .ForMember(dto => dto.RowVersion, o => o.MapFrom(c => Convert.FromBase64String(c.RowVersion)));
+                .ForMember(dto => dto.RowVersion, o => o.MapFrom(e => Convert.FromBase64String(e.RowVersion)));
 
-            CreateMap<SeguroSaludCreateDto, CreateSeguroSaludCommand>();            
+            CreateMap<SeguroSaludCreateDto, CreateSeguroSaludCommand>();
+            CreateMap<SeguroSaludUpdateDto, UpdateSeguroSaludCommand>()
+                .ForMember(dto => dto.RowVersion, o => o.MapFrom(src => Convert.FromBase64String(src.RowVersion)));            
 
             //
             // 3) Commands de creación → Entidades
