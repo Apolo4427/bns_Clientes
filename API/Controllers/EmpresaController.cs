@@ -37,6 +37,7 @@ namespace ModuloClientes.API.Controllers
         /// Crea una nueva empresa
         /// <summary>
         [HttpPost("createNewEmpresa")]
+        [ProducesResponseType(typeof(ActionResult), StatusCodes.Status201Created)]
         public async Task<ActionResult> Add(
             [FromBody] EmpresaCreateDto dto,
             CancellationToken cancellationToken
@@ -106,13 +107,12 @@ namespace ModuloClientes.API.Controllers
             CancellationToken cancellationToken
         )
         {
-            var result = await _updateValidator.ValidateAsync(updateDto);
+            var result = await _updateValidator.ValidateAsync(updateDto, cancellationToken);
             if (!result.IsValid)
                 return BadRequest(result.Errors);
 
             var command = _mapper.Map<UpdateEmpresaCommand>(updateDto)
-                                with
-            { Id = id };
+                                with { Id = id };
 
             try
             {
