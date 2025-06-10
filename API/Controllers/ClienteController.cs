@@ -1,11 +1,14 @@
+using System.Data;
 using AutoMapper;
 using FluentValidation;
 using MediatR;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.EntityFrameworkCore;
 using ModuloClientes.API.DTOs.Create;
 using ModuloClientes.API.DTOs.Response;
 using ModuloClientes.API.DTOs.Update;
 using ModuloClientes.Aplication.Command.ClienteCommands;
+using ModuloClientes.Core.Enums;
 using ModuloClientes.Core.Ports.Queries.ClienteQueries;
 // TODO: metodos para cambiar el estado del cliente
 
@@ -117,6 +120,33 @@ namespace ModuloClientes.API.Controllers
         }
 
         /// <summary>
+        /// Actualiza el estado de un cliente segun su id
+        /// <summary>
+        [HttpPatch("{id:guid}")]
+        [ProducesResponseType(typeof(ActionResult), StatusCodes.Status204NoContent)]
+        [ProducesResponseType(StatusCodes.Status400BadRequest)]
+        [ProducesResponseType(StatusCodes.Status404NotFound)]
+        public async Task<ActionResult> UpdateEstado(
+            Guid id,
+            CancellationToken cancellationToken
+        )
+        {
+            try
+            {
+                await _mediator.Send(new CambiarEstadoClienteCommand(id), cancellationToken);
+                return NoContent();
+            }
+            catch (KeyNotFoundException ex)
+            {
+                return NotFound(ex.Message);
+            }
+            catch (DBConcurrencyException ex)
+            {
+                return Conflict(ex.Message);
+            }
+        }
+
+        /// <summary>
         /// Actualiza un cliente segun su id
         /// <summary>
         [HttpPut("{id:guid}")]
@@ -135,16 +165,21 @@ namespace ModuloClientes.API.Controllers
                 return BadRequest(validationResult.Errors);
 
             var command = _mapper.Map<UpdateClienteCommand>(updateDto)
-                            with { Id = id};
+                            with
+            { Id = id };
 
             try
             {
                 await _mediator.Send(command, cancellationToken);
                 return NoContent();
             }
-            catch (KeyNotFoundException)
+            catch (KeyNotFoundException ex)
             {
-                return NotFound();
+                return NotFound(ex.Message);
+            }
+            catch (DBConcurrencyException ex)
+            {
+                return Conflict(ex.Message);
             }
         }
 

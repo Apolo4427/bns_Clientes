@@ -76,8 +76,12 @@ namespace ModuloClientes.Core.Models
 
         // Metodos de dominio
 
-        public void MarcarActivo() => Estado = EstadoCliente.Activo;
-        public void MarcarProspecto() => Estado = EstadoCliente.Prospecto;
+        // public void MarcarActivo() => Estado = EstadoCliente.Activo;
+        // public void MarcarProspecto() => Estado = EstadoCliente.Prospecto;
+        public void CambiarEstado(EstadoCliente nuevoEstado)
+        {
+            Estado = nuevoEstado;
+        }
 
         public void CambiarNombre(Name nuevoNombre)
         {

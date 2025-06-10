@@ -8,6 +8,7 @@ using ModuloClientes.API.DTOs.Response;
 using ModuloClientes.API.DTOs.Update;
 using ModuloClientes.Core.Ports.Commands.EmpresaCommands;
 using ModuloClientes.Core.Ports.Queries.EmpresaQueries;
+using NuGet.Packaging.Signing;
 
 namespace ModuloClientes.API.Controllers
 {
@@ -119,13 +120,13 @@ namespace ModuloClientes.API.Controllers
                 await _mediator.Send(command, cancellationToken);
                 return NoContent();
             }
-            catch (KeyNotFoundException)
+            catch (KeyNotFoundException ex)
             {
-                return NotFound();
+                return NotFound(ex.Message);
             }
-            catch (DBConcurrencyException)
+            catch (DBConcurrencyException ex)
             {
-                return Conflict();
+                return Conflict(ex.Message);
             }
         }
 
