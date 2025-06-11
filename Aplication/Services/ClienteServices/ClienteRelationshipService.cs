@@ -39,7 +39,7 @@ namespace ModuloClientes.Aplication.Services.ClienteDomainServices
             var otro = await _clienteRepo.GetByIdAsync(command.RelacionadoId, includeRelations: true, cancellationToken);
 
             cliente.EliminarRelacion(command.RelacionadoId);
-            otro.DesvincularRelacion(command.ClienteId);
+            otro.EliminarRelacion(command.ClienteId);
 
             await _clienteRepo.SaveChangesAsync(cancellationToken);
         }

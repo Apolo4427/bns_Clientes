@@ -80,6 +80,38 @@ namespace ModuloClientes.Infrastructure.Persistence.Repository
                 .ToListAsync(ct);
         }
 
+        public async Task<int> SaveChangesAsync(CancellationToken ct = default)
+        {
+            try
+            {
+                return await _context.SaveChangesAsync(ct);
+            }
+            catch (DbUpdateConcurrencyException ex)
+            {
+                var entry = ex.Entries.Single();
+                var dataBaseValues = await entry.GetDatabaseValuesAsync(ct);
+
+                if (dataBaseValues == null)
+                    throw new DbUpdateConcurrencyException(
+                        "El cliente ha sido eliminado por otro usuario. Por favor cree un nuevo cliente",
+                        ex);
+
+                var currentValues = entry.CurrentValues;
+                var originalValues = entry.OriginalValues;
+                var changedProps = originalValues.Properties
+                    .Where(p => !Equals(originalValues[p], currentValues[p]))
+                    .Select(p => p.Name);
+
+                throw new DbUpdateConcurrencyException(
+                    $"El cliente fue modificado por otro usuario. Campos cambiados: {string.Join(", ", changedProps)}.",
+                    ex);
+            }
+            catch (Exception ex)
+            {
+                throw new DataException("Error al guardar los cambios del cliente.", ex);
+            }
+        }
+
         public async Task UpdateAsync(Cliente cliente, CancellationToken ct)
         {
             try
