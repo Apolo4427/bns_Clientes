@@ -1,3 +1,8 @@
+using ModuloClientes.Aplication.Command.ClienteCommands;
+using ModuloClientes.Core.Enums;
+using ModuloClientes.Core.Models;
+using ModuloClientes.Core.Ports.IRepositories;
+
 namespace ModuloClientes.Aplication.Services.ClienteDomainServices
 {
     public class ClienteRelationshipService : IClienteRelationshipService
@@ -13,8 +18,8 @@ namespace ModuloClientes.Aplication.Services.ClienteDomainServices
             AddClienteRelacionCommand command,
             CancellationToken cancellationToken = default)
         {
-            var cliente = await _clienteRepo.GetByIdAsync(command.ClienteId, includeRelations: true);
-            var otro = await _clienteRepo.GetByIdAsync(command.RelacionadoId, includeRelations: true);
+            var cliente = await _clienteRepo.GetByIdAsync(command.ClienteId, includeRelations: true, cancellationToken);
+            var otro = await _clienteRepo.GetByIdAsync(command.RelacionadoId, includeRelations: true, cancellationToken);
 
             ClienteRelationshipServiceHelper.VincularBidireccional(
                 cliente,
@@ -29,8 +34,8 @@ namespace ModuloClientes.Aplication.Services.ClienteDomainServices
             DeleteClienteRelacionCommand command,
             CancellationToken cancellationToken = default)
         {
-            var cliente = await _clienteRepo.GetByIdAsync(command.ClienteId, includeRelations: true);
-            var otro = await _clienteRepo.GetByIdAsync(command.RelacionadoId, includeRelations: true);
+            var cliente = await _clienteRepo.GetByIdAsync(command.ClienteId, includeRelations: true, cancellationToken);
+            var otro = await _clienteRepo.GetByIdAsync(command.RelacionadoId, includeRelations: true, cancellationToken);
 
             cliente.EliminarRelacion(command.RelacionadoId);
             otro.DesvincularRelacion(command.ClienteId);
@@ -42,8 +47,8 @@ namespace ModuloClientes.Aplication.Services.ClienteDomainServices
             ChangeClienteRelacionTypeCommand command,
             CancellationToken cancellationToken = default)
         {
-            var cliente = await _clienteRepo.GetByIdAsync(command.ClienteId, includeRelations: true);
-            var otro = await _clienteRepo.GetByIdAsync(command.RelacionadoId, includeRelations: true);
+            var cliente = await _clienteRepo.GetByIdAsync(command.ClienteId, includeRelations: true, cancellationToken);
+            var otro = await _clienteRepo.GetByIdAsync(command.RelacionadoId, includeRelations: true, cancellationToken);
 
             cliente.CambiarTipoRelacion(command.RelacionadoId, command.NuevoTipo);
 
@@ -63,8 +68,8 @@ namespace ModuloClientes.Aplication.Services.ClienteDomainServices
             ChangeClienteDependenciaCommand command,
             CancellationToken cancellationToken = default)
         {
-            var cliente = await _clienteRepo.GetByIdAsync(command.ClienteId, includeRelations: true);
-            var otro = await _clienteRepo.GetByIdAsync(command.RelacionadoId, includeRelations: true);
+            var cliente = await _clienteRepo.GetByIdAsync(command.ClienteId, includeRelations: true, cancellationToken);
+            var otro = await _clienteRepo.GetByIdAsync(command.RelacionadoId, includeRelations: true, cancellationToken);
 
             cliente.CambiarDependenciaRelacion(command.RelacionadoId, command.EsDependiente);
             otro.CambiarDependenciaRelacion(command.ClienteId, !command.EsDependiente);

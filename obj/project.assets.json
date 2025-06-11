@@ -8312,19 +8312,19 @@
     ]
   },
   "packageFolders": {
-    "C:\\Users\\sergi\\.nuget\\packages\\": {}
+    "C:\\Users\\sergio.zapata\\.nuget\\packages\\": {}
   },
   "project": {
     "version": "1.0.0",
     "restore": {
-      "projectUniqueName": "C:\\Users\\sergi\\Documents\\BNS Taxes\\ERP\\Nuestro ERP\\ERPBNS\\Modulo de Clientes\\ModuloClientes\\ModuloClientes.csproj",
+      "projectUniqueName": "C:\\Users\\sergio.zapata\\Documents\\APIs_estudio\\bns_Clientes\\ModuloClientes.csproj",
       "projectName": "ModuloClientes",
-      "projectPath": "C:\\Users\\sergi\\Documents\\BNS Taxes\\ERP\\Nuestro ERP\\ERPBNS\\Modulo de Clientes\\ModuloClientes\\ModuloClientes.csproj",
-      "packagesPath": "C:\\Users\\sergi\\.nuget\\packages\\",
-      "outputPath": "C:\\Users\\sergi\\Documents\\BNS Taxes\\ERP\\Nuestro ERP\\ERPBNS\\Modulo de Clientes\\ModuloClientes\\obj\\",
+      "projectPath": "C:\\Users\\sergio.zapata\\Documents\\APIs_estudio\\bns_Clientes\\ModuloClientes.csproj",
+      "packagesPath": "C:\\Users\\sergio.zapata\\.nuget\\packages\\",
+      "outputPath": "C:\\Users\\sergio.zapata\\Documents\\APIs_estudio\\bns_Clientes\\obj\\",
       "projectStyle": "PackageReference",
       "configFilePaths": [
-        "C:\\Users\\sergi\\AppData\\Roaming\\NuGet\\NuGet.Config"
+        "C:\\Users\\sergio.zapata\\AppData\\Roaming\\NuGet\\NuGet.Config"
       ],
       "originalTargetFrameworks": [
         "net9.0"
@@ -8346,9 +8346,9 @@
       "restoreAuditProperties": {
         "enableAudit": "true",
         "auditLevel": "low",
-        "auditMode": "all"
+        "auditMode": "direct"
       },
-      "SdkAnalysisLevel": "9.0.100"
+      "SdkAnalysisLevel": "9.0.300"
     },
     "frameworks": {
       "net9.0": {
@@ -8422,7 +8422,7 @@
             "privateAssets": "all"
           }
         },
-        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.100/PortableRuntimeIdentifierGraph.json"
+        "runtimeIdentifierGraphPath": "C:\\Program Files\\dotnet\\sdk\\9.0.300/PortableRuntimeIdentifierGraph.json"
       }
     }
   },

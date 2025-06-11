@@ -48,6 +48,24 @@ namespace ModuloClientes.Infrastructure.Persistence.Repository
                 ?? throw new KeyNotFoundException($"El cliente con el id {id} no se encontro");
         }
 
+        public async Task<Cliente> GetByIdAsync(Guid id, bool includeRelations, CancellationToken ct = default)
+        {
+            if (includeRelations == true)
+            {
+                return await _context.Clientes
+                                .Include(c => c.Relaciones)
+                                .FirstOrDefaultAsync(c => c.Id == id, ct)
+                                    ?? throw new KeyNotFoundException(
+                                        $"El cliente con id {id} no ha sido encontrado"
+                                    );
+            }
+            return await _context.Clientes
+                            .FindAsync(id)
+                                ?? throw new KeyNotFoundException(
+                                        $"El cliente con id {id} no ha sido encontrado"
+                                    );
+        }
+
         public async Task<IReadOnlyList<Cliente>> ListAsync(
             int pageNumber,
             int pageSize,

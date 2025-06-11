@@ -263,7 +263,7 @@ namespace ModuloClientes.Core.Models
         /// Agrega una relación UNIDIRECCIONAL de este cliente hacia otro, 
         /// aplicando todas las validaciones de negocio.
         /// </summary>
-        private void AgregarRelacionUnidireccional(Cliente clienteRelacionado, TipoRelacion tipo, bool esDependiente)
+        internal void AgregarRelacionUnidireccional(Cliente clienteRelacionado, TipoRelacion tipo, bool esDependiente)
         {
             if (clienteRelacionado is null)
                 throw new ArgumentNullException(nameof(clienteRelacionado),
