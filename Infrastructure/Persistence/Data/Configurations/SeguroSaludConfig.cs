@@ -11,15 +11,11 @@ namespace ModuloClientes.Infrastructure.Data.Configurations
                      // 1. Nombre de la tabla
                      builder.ToTable("SegurosSalud");
 
-                     // 2. Clave primaria
-                     builder.HasKey(s => s.Id);
-
                      // 3. Configuración de la columna Id como GUID secuencial
                      builder.Property(s => s.Id)
                             .HasColumnType("uniqueidentifier")
-                            .HasDefaultValueSql("NEWSEQUENTIALID()") // Genera GUID secuencial en SQL Server / Azure SQL
-                            .ValueGeneratedOnAdd();
-
+                            .HasDefaultValueSql("NEWSEQUENTIALID()"); // Genera GUID secuencial en SQL Server / Azure SQL
+                     
                      // 4. Propiedades escalares
                      builder.Property(s => s.FechaInicio)
                             .IsRequired();

@@ -1,6 +1,6 @@
 using MediatR;
 
-namespace ModuloClientes.Core.Ports.Commands.EmpresaCommands
+namespace ModuloClientes.Aplication.Command.EmpresaCommands
 {
     public record UpdateEmpresaCommand(
         Guid Id,

@@ -1,5 +1,3 @@
-using System.ClientModel.Primitives;
-using System.Runtime.Intrinsics.Arm;
 using Microsoft.EntityFrameworkCore;
 using ModuloClientes.Core.Models;
 using ModuloClientes.Infrastructure.Data.Configurations;

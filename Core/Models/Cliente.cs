@@ -259,5 +259,38 @@ namespace ModuloClientes.Core.Models
             SeguroSaludId = null;
         }
 
+        /// <summary>
+        /// Agrega una relación UNIDIRECCIONAL de este cliente hacia otro, 
+        /// aplicando todas las validaciones de negocio.
+        /// </summary>
+        private void AgregarRelacionUnidireccional(Cliente clienteRelacionado, TipoRelacion tipo, bool esDependiente)
+        {
+            if (clienteRelacionado is null)
+                throw new ArgumentNullException(nameof(clienteRelacionado),
+                    "El cliente que será relacionado no puede ser nulo.");
+
+            if (clienteRelacionado.Id == this.Id)
+                throw new InvalidOperationException("Un cliente no puede relacionarse consigo mismo.");
+
+            // Solo un cónyuge permitido
+            if (tipo == TipoRelacion.Conyuge
+                && Relaciones.Any(r => r.Tipo == TipoRelacion.Conyuge))
+            {
+                throw new InvalidOperationException(
+                    "Ya existe un cónyuge registrado para este cliente.");
+            }
+
+            // Evita duplicados (mismo par ClienteId → RelacionadoId)
+            if (Relaciones.Any(r => r.RelacionadoId == clienteRelacionado.Id))
+            {
+                throw new InvalidOperationException(
+                    $"La relación con el cliente {clienteRelacionado.Id} ya existe.");
+            }
+
+            // Construye y añade la relación
+            var relacion = new ClienteRelacion(this, clienteRelacionado, tipo, esDependiente);
+            Relaciones.Add(relacion);
+        }
+
     }
 }
