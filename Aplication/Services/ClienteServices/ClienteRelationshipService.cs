@@ -2,6 +2,7 @@ using ModuloClientes.Aplication.Command.ClienteCommands;
 using ModuloClientes.Core.Enums;
 using ModuloClientes.Core.Models;
 using ModuloClientes.Core.Ports.IRepositories;
+using ModuloClientes.Core.Ports.IServices.IClienteServices;
 
 namespace ModuloClientes.Aplication.Services.ClienteDomainServices
 {
@@ -27,7 +28,7 @@ namespace ModuloClientes.Aplication.Services.ClienteDomainServices
                 command.Tipo,
                 command.EsDependiente);
 
-            await _clienteRepo.UnitOfWork.SaveChangesAsync(cancellationToken);
+            await _clienteRepo.SaveChangesAsync(cancellationToken);
         }
 
         public async Task DesvincularRelacionAsync(
@@ -40,7 +41,7 @@ namespace ModuloClientes.Aplication.Services.ClienteDomainServices
             cliente.EliminarRelacion(command.RelacionadoId);
             otro.DesvincularRelacion(command.ClienteId);
 
-            await _clienteRepo.UnitOfWork.SaveChangesAsync(cancellationToken);
+            await _clienteRepo.SaveChangesAsync(cancellationToken);
         }
 
         public async Task CambiarTipoRelacionAsync(
@@ -61,7 +62,7 @@ namespace ModuloClientes.Aplication.Services.ClienteDomainServices
 
             otro.CambiarTipoRelacion(command.ClienteId, inverso);
 
-            await _clienteRepo.UnitOfWork.SaveChangesAsync(cancellationToken);
+            await _clienteRepo.SaveChangesAsync(cancellationToken);
         }
 
         public async Task CambiarDependenciaRelacionAsync(
@@ -74,7 +75,7 @@ namespace ModuloClientes.Aplication.Services.ClienteDomainServices
             cliente.CambiarDependenciaRelacion(command.RelacionadoId, command.EsDependiente);
             otro.CambiarDependenciaRelacion(command.ClienteId, !command.EsDependiente);
 
-            await _clienteRepo.UnitOfWork.SaveChangesAsync(cancellationToken);
+            await _clienteRepo.SaveChangesAsync(cancellationToken);
         }
     }
 }
