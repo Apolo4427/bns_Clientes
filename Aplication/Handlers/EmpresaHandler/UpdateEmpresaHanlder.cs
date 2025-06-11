@@ -1,8 +1,8 @@
 using MediatR;
 using Microsoft.EntityFrameworkCore;
+using ModuloClientes.Aplication.Command.EmpresaCommands;
 using ModuloClientes.Core.Models.ValueObjects.ClienteValueObjects;
 using ModuloClientes.Core.Models.ValueObjects.EmpresaValueObjects;
-using ModuloClientes.Core.Ports.Commands.EmpresaCommands;
 using ModuloClientes.Core.Ports.IRepositories;
 
 namespace ModuloClientes.Aplication.Handlers.EmpresaHandler

@@ -1,7 +1,6 @@
 using AutoMapper;
 using ModuloClientes.Core.Models;
 using ModuloClientes.Core.Enums;
-using ModuloClientes.Core.Ports.Commands.EmpresaCommands;
 using ModuloClientes.API.DTOs.Create;
 using ModuloClientes.API.DTOs.Update;
 using ModuloClientes.API.DTOs.Response;
@@ -10,6 +9,7 @@ using ModuloClientes.Core.Models.ValueObjects.SeguroSaludValueObjects;
 using ModuloClientes.Core.Models.ValueObjects.EmpresaValueObjects;
 using ModuloClientes.Aplication.Command.ClienteCommands;
 using ModuloClientes.Aplication.Command.SeguroSaludCommands;
+using ModuloClientes.Aplication.Command.EmpresaCommands;
 
 namespace ModuloClientes.API.AutoMapper
 {
