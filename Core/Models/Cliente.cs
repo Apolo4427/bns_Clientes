@@ -260,10 +260,10 @@ namespace ModuloClientes.Core.Models
         }
 
         /// <summary>
-        /// Agrega una relación UNIDIRECCIONAL de este cliente hacia otro, 
+        /// Agrega una relación UNIDIRECCIONAL de este cliente hacia otro,
         /// aplicando todas las validaciones de negocio.
         /// </summary>
-        private void AgregarRelacionUnidireccional(Cliente clienteRelacionado, TipoRelacion tipo, bool esDependiente)
+        internal void AgregarRelacionUnidireccional(Cliente clienteRelacionado, TipoRelacion tipo, bool esDependiente)
         {
             if (clienteRelacionado is null)
                 throw new ArgumentNullException(nameof(clienteRelacionado),
@@ -287,9 +287,53 @@ namespace ModuloClientes.Core.Models
                     $"La relación con el cliente {clienteRelacionado.Id} ya existe.");
             }
 
-            // Construye y añade la relación
-            var relacion = new ClienteRelacion(this, clienteRelacionado, tipo, esDependiente);
-            Relaciones.Add(relacion);
+            Relaciones.Add(new ClienteRelacion(this, clienteRelacionado, tipo, esDependiente));
+        }
+
+        /// <summary>
+        /// Elimina la relación UNIDIRECCIONAL de este cliente hacia otro.
+        /// </summary>
+        public void EliminarRelacion(Guid relacionadoId)
+        {
+            var existente = Relaciones
+                .FirstOrDefault(r => r.RelacionadoId == relacionadoId)
+                ?? throw new KeyNotFoundException(
+                    $"No se encontró una relación con el cliente {relacionadoId}.");
+
+            Relaciones.Remove(existente);
+        }
+
+        /// <summary>
+        /// Cambia el tipo de relación UNIDIRECCIONAL de este cliente hacia otro.
+        /// </summary>
+        public void CambiarTipoRelacion(Guid relacionadoId, TipoRelacion nuevoTipo)
+        {
+            var relacion = Relaciones
+                .FirstOrDefault(r => r.RelacionadoId == relacionadoId)
+                ?? throw new KeyNotFoundException(
+                    $"No se encontró una relación con el cliente {relacionadoId}.");
+
+            // Regla opcional: sólo un cónyuge
+            if (nuevoTipo == TipoRelacion.Conyuge
+                && Relaciones.Any(r => r.Tipo == TipoRelacion.Conyuge && r.RelacionadoId != relacionadoId))
+            {
+                throw new InvalidOperationException("Ya existe otro cónyuge registrado para este cliente.");
+            }
+
+            relacion.CambiarTipoRelacion(nuevoTipo);
+        }
+
+        /// <summary>
+        /// Marca o desmarca al cliente relacionado como dependiente UNIDIRECCIONAL.
+        /// </summary>
+        public void CambiarDependenciaRelacion(Guid relacionadoId, bool esDependiente)
+        {
+            var relacion = Relaciones
+                .FirstOrDefault(r => r.RelacionadoId == relacionadoId)
+                ?? throw new KeyNotFoundException(
+                    $"No se encontró una relación con el cliente {relacionadoId}.");
+
+            relacion.CambiarDependencia(esDependiente);
         }
 
     }

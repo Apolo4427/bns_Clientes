@@ -48,6 +48,24 @@ namespace ModuloClientes.Infrastructure.Persistence.Repository
                 ?? throw new KeyNotFoundException($"El cliente con el id {id} no se encontro");
         }
 
+        public async Task<Cliente> GetByIdAsync(Guid id, bool includeRelations, CancellationToken ct = default)
+        {
+            if (includeRelations == true)
+            {
+                return await _context.Clientes
+                                .Include(c => c.Relaciones)
+                                .FirstOrDefaultAsync(c => c.Id == id, ct)
+                                    ?? throw new KeyNotFoundException(
+                                        $"El cliente con id {id} no ha sido encontrado"
+                                    );
+            }
+            return await _context.Clientes
+                            .FindAsync(id)
+                                ?? throw new KeyNotFoundException(
+                                        $"El cliente con id {id} no ha sido encontrado"
+                                    );
+        }
+
         public async Task<IReadOnlyList<Cliente>> ListAsync(
             int pageNumber,
             int pageSize,
@@ -60,6 +78,38 @@ namespace ModuloClientes.Infrastructure.Persistence.Repository
                 .Skip(skip)
                 .Take(pageSize)
                 .ToListAsync(ct);
+        }
+
+        public async Task<int> SaveChangesAsync(CancellationToken ct = default)
+        {
+            try
+            {
+                return await _context.SaveChangesAsync(ct);
+            }
+            catch (DbUpdateConcurrencyException ex)
+            {
+                var entry = ex.Entries.Single();
+                var dataBaseValues = await entry.GetDatabaseValuesAsync(ct);
+
+                if (dataBaseValues == null)
+                    throw new DbUpdateConcurrencyException(
+                        "El cliente ha sido eliminado por otro usuario. Por favor cree un nuevo cliente",
+                        ex);
+
+                var currentValues = entry.CurrentValues;
+                var originalValues = entry.OriginalValues;
+                var changedProps = originalValues.Properties
+                    .Where(p => !Equals(originalValues[p], currentValues[p]))
+                    .Select(p => p.Name);
+
+                throw new DbUpdateConcurrencyException(
+                    $"El cliente fue modificado por otro usuario. Campos cambiados: {string.Join(", ", changedProps)}.",
+                    ex);
+            }
+            catch (Exception ex)
+            {
+                throw new DataException("Error al guardar los cambios del cliente.", ex);
+            }
         }
 
         public async Task UpdateAsync(Cliente cliente, CancellationToken ct)
